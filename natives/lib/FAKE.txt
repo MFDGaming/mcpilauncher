@@ -1,0 +1,5 @@
+libX11.so.6
+libEGL.so
+libGLESv2.so
+libbcm_host.so
+libSDL-1.2.so.0

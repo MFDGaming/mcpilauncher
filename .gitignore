@@ -1,0 +1,12 @@
+/minecraft-pi
+/minecraft-pi.c
+/options
+/stubs/**/*.so
+/qemu/build
+/data
+
+natives/lib/libX11.so.6
+natives/lib/libEGL.so
+natives/lib/libGLESv2.so
+natives/lib/libbcm_host.so
+natives/lib/libSDL-1.2.so.0
