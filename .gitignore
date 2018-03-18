@@ -10,3 +10,13 @@ natives/lib/libEGL.so
 natives/lib/libGLESv2.so
 natives/lib/libbcm_host.so
 natives/lib/libSDL-1.2.so.0
+
+*.tar.gz
+mcpi/
+CONTROLS.txt
+HOW_TO_RUN.txt
+LICENSE.txt
+VERSION.txt
+options.txt
+*.core
+api/
