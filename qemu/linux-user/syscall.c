@@ -7849,7 +7849,7 @@ static int host_to_target_cpu_mask(const unsigned long *host_mask,
 #define AIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4)
 
 int* _g2h(uint32_t x);
-int* _g2h(uint32_t x) { return (int*)g2h(x); }
+int* _g2h(uint32_t x) { return (int*) g2h(x); }
 
 /* do_syscall() should always have a single exit point at the end so
    that actions, such as logging of syscall results, can be performed.
@@ -7914,11 +7914,11 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
         ret = SDL_ShowCursor(a);
       } else if(NAME_IS("SDL_GetWMInfo")) {
         AI();
-        SDL_SysWMinfo* t = g2h(a);
-        ret = SDL_GetWMInfo(t);
-        printf("(result: %d) Host: %d.%d.%d\n", ret, t->version.major, t->version.minor, t->version.patch);
+        SDL_SysWMinfo* gsp = g2h(a);
+        ret = SDL_GetWMInfo(gsp);
       } else if(NAME_IS("SDL_PollEvent")) {
         AI();
+        // FIXME struct differences
         SDL_Event* t = g2h(a);
         ret = SDL_PollEvent(t);
       }
