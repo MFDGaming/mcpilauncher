@@ -1,11 +1,11 @@
 CC = arm-none-eabi-gcc
-
+CFLAGS = -Wno-int-conversion -shared -fpic -marm -nostdlib -mfloat-abi=hard
 TARGET := libEGL.so
 
 .PHONY: clean move
 
 $(TARGET):
-	$(CC) -Wall egl.c -shared -fpic -marm -nostdlib -o $@ -mfloat-abi=hard
+	$(CC) $(CFLAGS) egl.c -o $@
 
 clean:
 	$(RM) $(TARGET)

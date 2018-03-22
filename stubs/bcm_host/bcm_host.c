@@ -1,9 +1,4 @@
-#include <stdio.h>
+#include "../syscall.h"
 
-void bcm_host_init(void) {
-  printf("bcm_host_init()\n");
-}
-
-void bcm_host_deinit(void) {
-  printf("bcm_host_deinit()\n");
-}
+FUNCTION_0(bcm_host_init)
+FUNCTION_0(bcm_host_deinit)

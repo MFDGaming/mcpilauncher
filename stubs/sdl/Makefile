@@ -1,11 +1,11 @@
 CC = arm-none-eabi-gcc
-
+CFLAGS = -Wno-int-conversion -shared -fpic -marm -nostdlib -mfloat-abi=hard
 TARGET := libSDL-1.2.so.0
 
 .PHONY: clean move
 
 $(TARGET):
-	$(CC) -Wall sdl.c -shared -fpic -marm -nostdlib -o $@ -mfloat-abi=hard
+	$(CC) $(CFLAGS) sdl.c -o $@
 
 clean:
 	$(RM) $(TARGET)

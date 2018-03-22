@@ -11,6 +11,8 @@ QFLAGS = -L $(NATIVES)
 
 .PHONY: qemu stubs strace run gdb connect
 
+all: stubs qemu
+
 qemu:
 	@cd $(DIR)/qemu/build; make
 
