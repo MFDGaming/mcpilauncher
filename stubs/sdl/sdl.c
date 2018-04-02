@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "../syscall.h"
 
@@ -11,11 +12,11 @@ FUNCTION_1(SDL_WM_GrabInput);
 FUNCTION_1(SDL_ShowCursor);
 
 static void x_lock_function(void) {
-  // printf("x_lock_function()\n");
+  printf("x_lock_function()\n");
 }
 
 static void x_unlock_function(void) {
-  // printf("x_unlock_function()\n");
+  printf("x_unlock_function()\n");
 }
 
 // From SDL
@@ -32,15 +33,17 @@ typedef struct {
 typedef unsigned long Window;
 
 typedef struct {
-  SDL_version version;
-  SDL_SYSWM_TYPE subsystem;
+  SDL_version version; // 3
+  SDL_SYSWM_TYPE subsystem; // 1
   union {
-    struct {
-      void* display;
-      Window window;
+     struct {
+      void* display; // 4
+      Window window; // 4
+      
+      int filler;
 
-      void (*lock_func)(void);
-      void (*unlock_func)(void);
+      void (*lock_func)(void); // 4
+      void (*unlock_func)(void); // 4
 
       Window fswindow;
       Window wmwindow;
@@ -50,14 +53,12 @@ typedef struct {
   } info;
 } SDL_SysWMinfo;
 
-int SDL_GetWMInfo(int a) {
-  void* _a[1] = { a };
-  int r = SYSCALL(_a);
+int SDL_GetWMInfo(void* a) {
+  memset(a, 0, sizeof(SDL_SysWMinfo));
+  SDL_SysWMinfo* info = (SDL_SysWMinfo*) a;
 
-  SDL_SysWMinfo* info = (SDL_SysWMinfo*) _a;
-
-  info->info.x11.unlock_func = x_unlock_function;
   info->info.x11.lock_func = x_lock_function;
+  info->info.x11.unlock_func = x_unlock_function;
 
-  return r;
+  return 1;
 }

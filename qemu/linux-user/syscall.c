@@ -7847,6 +7847,7 @@ static int host_to_target_cpu_mask(const unsigned long *host_mask,
 #define AIII() _AI(a, 0); _AI(b, 1); _AI(c, 2)
 #define AIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3)
 #define AIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4)
+#define AIIIIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4); _AI(f, 5); _AI(g, 6); _AI(h, 7)
 
 int* _g2h(uint32_t x);
 int* _g2h(uint32_t x) { return (int*) g2h(x); }
@@ -7912,10 +7913,6 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       } else if(NAME_IS("SDL_ShowCursor")) {
         AI();
         ret = SDL_ShowCursor(a);
-      } else if(NAME_IS("SDL_GetWMInfo")) {
-        AI();
-        SDL_SysWMinfo* gsp = g2h(a);
-        ret = SDL_GetWMInfo(gsp);
       } else if(NAME_IS("SDL_PollEvent")) {
         AI();
         // FIXME struct differences
@@ -7923,10 +7920,43 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
         ret = SDL_PollEvent(t);
       }
 
-      else if(NAME_IS("h2g")) {
-        AI();
-        ret = h2g(a);
-      }
+      // else if(NAME_IS("XGetWindowAttributes")) {
+        // AIII();
+        //
+        // SDL_GetWMInfo info;
+        // SDL_GetWMInfo(&info);
+        //
+        // info->info.x11.unlock_func();
+        //
+        // Display* display = SDL_
+        //
+        // ret = XGetWindowAttributes(a, b, c);
+        //
+        // info->info.x11.lock_func();
+        // ret = 1;
+      // }
+
+      // else if(NAME_IS("XTranslateCoordinates")) {
+        // AIIIIIIII();
+
+        // a = a;
+        // b = b;
+        // c = c;
+        // d = d;
+        // e = e;
+        //
+        // int _f = h2g(f);
+        // int _g = h2g(g);
+        // int _h = h2g(h);
+        //
+        // *((int*) _f) = 100;
+
+        // *_f = 100;
+        // *_g = 100;
+        // *_h = 0xDEADBEEF;
+
+        // ret = 1;
+      // }
 
       // EGL
 
