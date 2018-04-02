@@ -1,6 +1,7 @@
 CXX = g++
 DEBUGGER = gdb
 AARCH64DEBUGGER = aarch64-linux-gnu-gdb
+APITRACE = apitrace
 
 DIR = `pwd`
 NATIVES = $(DIR)/natives
@@ -24,6 +25,9 @@ strace:
 
 run:
 	@$(QEMU) $(QFLAGS) $(MINECRAFT)
+
+trace:
+	$(APITRACE) trace --api egl $(QEMU) $(QFLAGS) $(MINECRAFT)
 
 gdb:
 	@$(DEBUGGER) --args $(QEMU) -g 1337 $(QFLAGS) $(MINECRAFT)

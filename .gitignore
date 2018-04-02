@@ -4,6 +4,7 @@
 /stubs/**/*.so
 /qemu/build
 /data
+*.trace
 
 natives/lib/libX11.so.6
 natives/lib/libEGL.so

@@ -7833,6 +7833,7 @@ static int host_to_target_cpu_mask(const unsigned long *host_mask,
 #include <SDL/SDL.h>
 #include <SDL/SDL_syswm.h>
 #include <EGL/egl.h>
+#include <GLES/gl.h>
 #include <X11/Xlib.h>
 #include <dlfcn.h>
 
@@ -7847,10 +7848,18 @@ static int host_to_target_cpu_mask(const unsigned long *host_mask,
 #define AIII() _AI(a, 0); _AI(b, 1); _AI(c, 2)
 #define AIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3)
 #define AIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4)
+#define AIIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4); _AI(f, 5)
+#define AIIIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4); _AI(f, 5); _AI(g, 6)
 #define AIIIIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4); _AI(f, 5); _AI(g, 6); _AI(h, 7)
+#define AIIIIIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4); _AI(f, 5); _AI(g, 6); _AI(h, 7); _AI(i, 8)
 
 int* _g2h(uint32_t x);
 int* _g2h(uint32_t x) { return (int*) g2h(x); }
+
+EGLDisplay eDisplay;
+EGLConfig eConfig;
+EGLContext eContext;
+EGLSurface eSurface;
 
 /* do_syscall() should always have a single exit point at the end so
    that actions, such as logging of syscall results, can be performed.
@@ -7893,146 +7902,385 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       const char* name = (const char*) g2h(arg1);
       void* arguments = g2h(arg2);
 
-      TRACE();
+      // TRACE();
 
       // SDL
-      if(NAME_IS("SDL_Init")) {
-        AI();
-        ret = SDL_Init(a);
-      } else if(NAME_IS("SDL_SetVideoMode")) {
-        AIIII();
-        SDL_SetVideoMode(a, b, c, d);
-        ret = 1;
-      } else if(NAME_IS("SDL_WM_SetCaption")) {
-        AI();
-        SDL_WM_SetCaption(TO(char*, a), 0); // HACK
+      if(NAME_IS("SDL_Init")) { ret = 0; }
+      else if(NAME_IS("SDL_SetVideoMode")) { ret = 1; }
+      else if(NAME_IS("SDL_WM_SetCaption")) {
+        if(SDL_Init(SDL_INIT_VIDEO) != 0) {
+          printf("SDL_Init failed\n");
+          return -1;
+        }
+
+        SDL_SetVideoMode(848, 480, 32, 16);
+        SDL_WM_SetCaption("Minecraft", NULL);
+
+        SDL_SysWMinfo info;
+        SDL_VERSION(&info.version);
+        SDL_GetWMInfo(&info);
+        eDisplay = eglGetDisplay((EGLNativeDisplayType) info.info.x11.display);
+
+        eglInitialize(eDisplay, NULL, NULL);
+
+        EGLint number_of_config;
+        eglChooseConfig(eDisplay, g2h(0x102208), &eConfig, 1, &number_of_config);
+
+        eglBindAPI(EGL_OPENGL_ES_API);
+
+        eContext = eglCreateContext(eDisplay, eConfig, EGL_NO_CONTEXT, NULL);
+        eSurface = eglCreateWindowSurface(eDisplay, eConfig, (NativeWindowType) info.info.x11.window, NULL);
+
+        eglMakeCurrent(eDisplay, eSurface, eSurface, eContext);
         ret = 0;
-      } else if(NAME_IS("SDL_WM_GrabInput")) {
-        AI();
+      }
+      else if(NAME_IS("SDL_WM_GrabInput")) { AI();
         ret = SDL_WM_GrabInput(a);
-      } else if(NAME_IS("SDL_ShowCursor")) {
-        AI();
+      }
+      else if(NAME_IS("SDL_ShowCursor")) { AI();
         ret = SDL_ShowCursor(a);
-      } else if(NAME_IS("SDL_PollEvent")) {
-        AI();
-        // FIXME struct differences
-        SDL_Event* t = g2h(a);
-        ret = SDL_PollEvent(t);
+      }
+      else if(NAME_IS("SDL_PollEvent")) {
+        // FIXME this fixes rendering-- yet this needs to be added to
+        // control things!
+        ret = 0;
       }
 
-      // else if(NAME_IS("XGetWindowAttributes")) {
-        // AIII();
-        //
-        // SDL_GetWMInfo info;
-        // SDL_GetWMInfo(&info);
-        //
-        // info->info.x11.unlock_func();
-        //
-        // Display* display = SDL_
-        //
-        // ret = XGetWindowAttributes(a, b, c);
-        //
-        // info->info.x11.lock_func();
-        // ret = 1;
-      // }
+      // FIXME add X11 patch through (fix locking as well)
 
-      // else if(NAME_IS("XTranslateCoordinates")) {
-        // AIIIIIIII();
+      // OpenGL
+      // int glBindBuffer(GLenum target, GLuint buffer) { TRACE(); }
+      // int glBufferData(GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage) { TRACE(); }
+      // int glDeleteBuffers(GLsizei n, const GLuint* buffers) { TRACE(); }
+      // int glFogx(GLenum pname, GLfixed param) { TRACE(); }
+      else if(NAME_IS("glBindBuffer")) {
+        AII();
+        glBindBuffer(a, b);
+        ret = 0;
+      }
+      else if(NAME_IS("glBufferData")) {
+        AIIII();
+        glBufferData(a, b, g2h(c), d);
+        ret = 0;
+      }
+      else if(NAME_IS("glDeleteBuffers")) {
+        AII();
+        glDeleteBuffers(a, g2h(b));
+        ret = 0;
+      }
+      else if(NAME_IS("glFogx")) {
+        AII();
+        glFogx(a,b);
+        ret = 0;
+      }
 
-        // a = a;
-        // b = b;
-        // c = c;
-        // d = d;
-        // e = e;
-        //
-        // int _f = h2g(f);
-        // int _g = h2g(g);
-        // int _h = h2g(h);
-        //
-        // *((int*) _f) = 100;
+      // int glDepthRangef(void) { TRACE(); }
+      else if(NAME_IS("glDepthRangef")) {
+        AII();
+        glDepthRangef(a, b);
+        ret = 0;
+      }
+      // int glOrthof(void) { TRACE(); }
+      else if(NAME_IS("glOrthof")) {
+        float a = ARGUMENT(arguments, float, 0);
+        float b = ARGUMENT(arguments, float, 4);
+        float c = ARGUMENT(arguments, float, 8);
+        float d = ARGUMENT(arguments, float, 12);
+        float e = ARGUMENT(arguments, float, 16);
+        float f = ARGUMENT(arguments, float, 20);
 
-        // *_f = 100;
-        // *_g = 100;
-        // *_h = 0xDEADBEEF;
+        glOrthof(a,b,c,d,e,f);
+        ret = 0;
+      }
+      // void glAlphaFunc(GLenum func, GLclampf ref) { TRACE(); }
+      else if(NAME_IS("glAlphaFunc")) {
+        AII();
+        glAlphaFunc(a, b);
+        ret = 0;
+      }
 
-        // ret = 1;
-      // }
+      // void glBindTexture(GLenum target, GLuint texture) { TRACE(); }
+      else if(NAME_IS("glBindTexture")) {
+        AII();
+        glBindTexture(a, b);
+        ret = 0;
+      }
+
+      // void glBlendFunc(GLenum sfactor, GLenum dfactor) { TRACE(); }
+      else if(NAME_IS("glBlendFunc")) {
+        AII();
+        glBlendFunc(a, b);
+        ret = 0;
+      }
+      // void glClear(GLbitfield mask) { TRACE(); }
+      else if(NAME_IS("glClear")) { AI();
+        glClear(a);
+        glClearColor(1.0, 0.0, 0.0, 1.0);
+        ret = 0;
+      }
+      // // void glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) { TRACE(); }
+      else if(NAME_IS("glClearColor")) {
+        AIIII();
+        glClearColor(a, b, c, d);
+        ret = 0;
+      }
+      // void glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) { TRACE(); }
+      else if(NAME_IS("glColor4f")) {
+        AIIII();
+        glColor4f(a,b,c,d);
+        ret = 0;
+      }
+      // void glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) { TRACE(); }
+      else if(NAME_IS("glColorMask")) {
+        AIIII();
+        glColorMask(a,b,c,d);
+        ret = 0;
+      }
+      // void glColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
+      else if(NAME_IS("glColorPointer")) {
+        AIIII();
+        glColorPointer(a,b,c,g2h(d));
+        ret = 0;
+      }
+      // void glCullFace(GLenum mode) { TRACE(); }
+      else if(NAME_IS("glCullFace")) {
+        AI();
+        glCullFace(a);
+        ret = 0;
+      }
+      // void glDeleteTextures(GLsizei n, const GLuint *textures) { TRACE(); }
+      else if(NAME_IS("glDeleteTextures")) {
+        AII();
+        glDeleteTextures(a, g2h(b));
+        ret = 0;
+      }
+      // void glDepthFunc(GLenum func) { TRACE(); }
+      else if(NAME_IS("glDepthFunc")) {
+        AI();
+        glDepthFunc(a);
+        ret = 0;
+      }
+      // void glDepthMask(GLboolean flag) { TRACE(); }
+      else if(NAME_IS("glDepthMask")) {
+        AI();
+        glDepthMask(a);
+        ret = 0;
+      }
+      // void glDisable(GLenum cap) { TRACE(); }
+      else if(NAME_IS("glDisable")) {
+        AI();
+        glDisable(a);
+        ret = 0;
+      }
+      // void glDisableClientState(GLenum cap) { TRACE(); }
+      else if(NAME_IS("glDisableClientState")) {
+        AI();
+        glDisableClientState(a);
+        ret = 0;
+      }
+      // void glDrawArrays(GLenum mode, GLint first, GLsizei count) { TRACE(); }
+      else if(NAME_IS("glDrawArrays")) {
+        AIII();
+        glDrawArrays(a,b,c);
+        ret = 0;
+      }
+      // void glEnable(GLenum cap) { TRACE(); }
+      else if(NAME_IS("glEnable")) {
+        AI();
+        glEnable(a);
+        ret = 0;
+      }
+      // void glEnableClientState(GLenum cap) { TRACE(); }
+      else if(NAME_IS("glEnableClientState")) {
+        AI();
+        glEnableClientState(a);
+        ret = 0;
+      }
+      // void glFogf(GLenum pname, GLfloat param) { TRACE(); }
+      else if(NAME_IS("glFogf")) {
+        AII();
+        glFogf(a,b);
+        ret = 0;
+      }
+      // void glFogfv(GLenum pname, const GLfloat *params) { TRACE(); }
+      else if(NAME_IS("glFogfv")) {
+        AII();
+        glFogfv(a,g2h(b));
+        ret = 0;
+      }
+      // void glGenTextures(GLsizei n, GLuint *textures) { TRACE(); }
+      else if(NAME_IS("glGenTextures")) {
+        AII();
+        glGenTextures(a,g2h(b));
+        ret = 0;
+      }
+      // void glGetFloatv(GLenum pname, GLfloat *params) { TRACE(); }
+      else if(NAME_IS("glGetFloatv")) {
+        AII();
+        glGetFloatv(a,g2h(b));
+        ret = 0;
+      }
+      // void glHint(GLenum target, GLenum mode) { TRACE(); }
+      else if(NAME_IS("glHint")) {
+        AII();
+        glHint(a,b);
+        ret = 0;
+      }
+      // void glLineWidth(GLfloat width) { TRACE(); }
+      else if(NAME_IS("glLineWidth")) {
+        AI();
+        glLineWidth(a);
+        ret = 0;
+      }
+      // void glLoadIdentity(void) { TRACE(); }
+      else if(NAME_IS("glLoadIdentity")) {
+        glLoadIdentity();
+        ret = 0;
+      }
+      // void glMatrixMode(GLenum mode) { TRACE(); }
+      else if(NAME_IS("glMatrixMode")) {
+        AI();
+        glMatrixMode(a);
+        ret = 0;
+      }
+      // void glMultMatrixf(const GLfloat *m) { TRACE(); }
+      else if(NAME_IS("glMultMatrixf")) {
+        AI();
+        glMultMatrixf(g2h(a));
+        ret = 0;
+      }
+      // void glNormal3f(GLfloat nx, GLfloat ny, GLfloat nz) { TRACE(); }
+      else if(NAME_IS("glNormal3f")) {
+        AIII();
+        glNormal3f(a,b,c);
+        ret = 0;
+      }
+      // void glPolygonOffset(GLfloat factor, GLfloat units) { TRACE(); }
+      else if(NAME_IS("glPolygonOffset")) {
+        AII();
+        glPolygonOffset(a,b);
+        ret = 0;
+      }
+
+      // void glPopMatrix(void) { TRACE(); }
+      else if(NAME_IS("glPopMatrix")) {
+        glPopMatrix();
+        ret = 0;
+      }
+      // void glPushMatrix(void) { TRACE(); }
+      else if(NAME_IS("glPushMatrix")) {
+        glPushMatrix();
+        ret = 0;
+      }
+      // void glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
+      else if(NAME_IS("glRotatef")) {
+        AIIII();
+        glRotatef(a,b,c,d);
+        ret = 0;
+      }
+      // void glScalef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
+      else if(NAME_IS("glScalef")) {
+        AIII();
+        glScalef(a,b,c);
+        ret = 0;
+      }
+      // void glScissor(GLint x, GLint y, GLsizei width, GLsizei height) { TRACE(); }
+      else if(NAME_IS("glScissor")) {
+        AIIII();
+        glScissor(a,b,c,d);
+        ret = 0;
+      }
+      // void glShadeModel(GLenum mode) { TRACE(); }
+      else if(NAME_IS("glShadeModel")) {
+        AI();
+        glShadeModel(a);
+        ret = 0;
+      }
+      // void glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
+      else if(NAME_IS("glTexCoordPointer")) {
+        AIIII();
+        glTexCoordPointer(a,b,c,g2h(d));
+        ret = 0;
+      }
+      // void glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels) { TRACE(); }
+      else if(NAME_IS("glTexImage2D")) {
+        AIIIIIIIII();
+        glTexImage2D(a,b,c,d,e,f,g,h,g2h(i));
+        ret = 0;
+      }
+      // void glTexParameteri(GLenum target, GLenum pname, GLint param) { TRACE(); }
+      else if(NAME_IS("glTexParameteri")) {
+        AIII();
+        glTexParameteri(a,b,c);
+        ret = 0;
+      }
+      // void glTranslatef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
+      else if(NAME_IS("glTranslatef")) {
+        AIII();
+        glTranslatef(a,b,c);
+        ret = 0;
+      }
+      // void glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
+      else if(NAME_IS("glVertexPointer")) {
+        AIIII();
+        glVertexPointer(a,b,c,g2h(d));
+        ret = 0;
+      }
+      // void glViewport(GLint x, GLint y, GLsizei width, GLsizei height) { TRACE(); }
+      else if(NAME_IS("glViewport")) {
+        AIIII();
+        glViewport(a,b,c,d);
+        ret = 0;
+      }
 
       // EGL
-
       else if(NAME_IS("eglGetDisplay")) {
-        void* display = eglGetDisplay(0);
-        int* a = (int*) &display;
-        return *a;
+        ret = 0;
       }
 
       else if(NAME_IS("eglInitialize")) {
-        eglInitialize(eglGetDisplay(0), NULL, NULL); // HACK
         ret = 0;
       }
 
       else if(NAME_IS("eglChooseConfig")) {
-        AIIIII();
-        d =d;
-        a =a;
-        b =b;
-        eglChooseConfig(eglGetDisplay(0), (void*) "$0", g2h(c), 1, g2h(e));
         ret = 0;
       }
 
       else if(NAME_IS("eglBindAPI")) {
-        eglBindAPI(12448);
         ret = 0;
       }
 
       else if(NAME_IS("eglCreateContext")) {
-        AIIII();
-        a = a;
-        c = c;
-        // printf("%d %d\n", a, c);
-        void* context = eglCreateContext(eglGetDisplay(0), g2h(b), 0, g2h(d));
-        int* t = (int*) &context;
-        ret = *t;
+        ret = 0;
       }
 
       else if(NAME_IS("eglCreateWindowSurface")) {
-        AIIII();
-        c =c;
-        a =a;
-        d =d;
-        // printf("%d %d\n", a, d);
-        SDL_SysWMinfo tt;
-        SDL_GetWMInfo(&tt);
-        EGLNativeWindowType handle = *((EGLNativeWindowType*) &tt.info.x11);
-        void* surface = eglCreateWindowSurface(eglGetDisplay(0), g2h(b), *((int*) &handle), 0);
-        int* t = (int*) &surface;
-        ret = *t;
+        ret = 0;
       }
 
       else if(NAME_IS("eglMakeCurrent")) {
-        AIIII();
-        a++;
-        ret = eglMakeCurrent(eglGetDisplay(0), g2h(b), g2h(c), g2h(d));
+        ret = 0;
       }
 
       else if(NAME_IS("eglSwapBuffers")) {
-        AII();
-        a++; // Bypass warning
-        ret = eglSwapBuffers(eglGetDisplay(0), g2h(b));
+        printf("EGL swap buffer\n");
+        eglSwapBuffers(eDisplay, eSurface);
+        ret = 0;
       }
 
       else if(NAME_IS("eglDestroySurface")) {
-        AII();
-        a++; // Bypass warning
-        ret = eglDestroySurface(eglGetDisplay(0), g2h(b));
+        printf("EGL destroy surface\n");
+        // eglDestroySurface(eDisplay, eSurface);
+        ret = 0;
       }
 
       else if(NAME_IS("eglTerminate")) {
-        ret = eglTerminate(eglGetDisplay(0));
+        printf("EGL terminate\n");
+        // eglTerminate(eDisplay);
+        ret = 0;
       }
 
       else {
-        printf("`%s()` was unhandled!\n", name);
         ret = -1;
       }
     }

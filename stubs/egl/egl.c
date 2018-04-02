@@ -15,29 +15,6 @@ typedef unsigned int EGLint;
 typedef unsigned int EGLenum;
 typedef unsigned int EGLBoolean;
 
-// EGL
-FUNCTION_1(eglGetDisplay)
-FUNCTION_0(eglInitialize)
-FUNCTION_5(eglChooseConfig)
-FUNCTION_1(eglBindAPI)
-FUNCTION_4(eglCreateContext);
-FUNCTION_4(eglCreateWindowSurface);
-FUNCTION_4(eglMakeCurrent);
-FUNCTION_2(eglSwapBuffers);
-FUNCTION_2(eglDestroySurface);
-FUNCTION_1(eglTerminate);
-
-// EGLSurface eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, const EGLint *attrib_list) { TRACE(); }
-// EGLBoolean eglBindAPI(EGLenum api) { TRACE(); }
-// EGLContext eglCreateContext(EGLDisplay dpy, EGLConfig config, EGLContext share_context, const EGLint *attrib_list) { TRACE(); }
-// EGLBoolean eglMakeCurrent(EGLDisplay dpy, EGLSurface draw, EGLSurface read, EGLContext ctx) { TRACE(); }
-// EGLBoolean eglDestroySurface(EGLDisplay dpy, EGLSurface surface) { TRACE(); }
-// EGLDisplay eglGetDisplay(EGLNativeDisplayType display_id) { TRACE(); }
-// EGLBoolean eglChooseConfig(EGLDisplay dpy, const EGLint *attrib_list, EGLConfig *configs, EGLint config_size, EGLint *num_config) { TRACE(); }
-// EGLBoolean eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor) { /* XXX Minecraft appears to call this with void */ }
-// EGLBoolean eglSwapBuffers(EGLDisplay dpy, EGLSurface surface) { TRACE(); }
-// EGLBoolean eglTerminate(EGLDisplay dpy) { TRACE(); }
-
 typedef int _DWORD;
 typedef void GLvoid;
 typedef unsigned int GLenum;
@@ -58,51 +35,146 @@ typedef double GLclampd;
 typedef ssize_t GLsizeiptr;
 typedef int GLfixed;
 
-// XXX GL
-int glBindBuffer(GLenum target, GLuint buffer) { TRACE(); }
-int glBufferData(GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage) { TRACE(); }
-int glDeleteBuffers(GLsizei n, const GLuint* buffers) { TRACE(); }
-int glFogx(GLenum pname, GLfixed param) { TRACE(); }
+// EGL
+FUNCTION_1(eglGetDisplay);
+FUNCTION_0(eglInitialize);
+FUNCTION_5(eglChooseConfig);
+FUNCTION_1(eglBindAPI);
+FUNCTION_4(eglCreateContext);
+FUNCTION_4(eglCreateWindowSurface);
+FUNCTION_4(eglMakeCurrent);
+FUNCTION_2(eglSwapBuffers);
+FUNCTION_2(eglDestroySurface);
+FUNCTION_1(eglTerminate);
 
-int glDepthRangef(void) { TRACE(); }
-int glOrthof(void) { TRACE(); }
-void glAlphaFunc(GLenum func, GLclampf ref) { TRACE(); }
-void glBindTexture(GLenum target, GLuint texture) { TRACE(); }
-void glBlendFunc(GLenum sfactor, GLenum dfactor) { TRACE(); }
-void glClear(GLbitfield mask) { TRACE(); }
-void glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) { TRACE(); }
-void glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) { TRACE(); }
-void glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) { TRACE(); }
-void glColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
-void glCullFace(GLenum mode) { TRACE(); }
-void glDeleteTextures(GLsizei n, const GLuint *textures) { TRACE(); }
-void glDepthFunc(GLenum func) { TRACE(); }
-void glDepthMask(GLboolean flag) { TRACE(); }
-void glDisable(GLenum cap) { TRACE(); }
-void glDisableClientState(GLenum cap) { TRACE(); }
-void glDrawArrays(GLenum mode, GLint first, GLsizei count) { TRACE(); }
-void glEnable(GLenum cap) { TRACE(); }
-void glEnableClientState(GLenum cap) { TRACE(); }
-void glFogf(GLenum pname, GLfloat param) { TRACE(); }
-void glFogfv(GLenum pname, const GLfloat *params) { TRACE(); }
-void glGenTextures(GLsizei n, GLuint *textures) { TRACE(); }
-void glGetFloatv(GLenum pname, GLfloat *params) { TRACE(); }
-void glHint(GLenum target, GLenum mode) { TRACE(); }
-void glLineWidth(GLfloat width) { TRACE(); }
-void glLoadIdentity(void) { TRACE(); }
-void glMatrixMode(GLenum mode) { TRACE(); }
-void glMultMatrixf(const GLfloat *m) { TRACE(); }
-void glNormal3f(GLfloat nx, GLfloat ny, GLfloat nz) { TRACE(); }
-void glPolygonOffset(GLfloat factor, GLfloat units) { TRACE(); }
-void glPopMatrix(void) { TRACE(); }
-void glPushMatrix(void) { TRACE(); }
-void glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
-void glScalef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
-void glScissor(GLint x, GLint y, GLsizei width, GLsizei height) { TRACE(); }
-void glShadeModel(GLenum mode) { TRACE(); }
-void glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
-void glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels) { TRACE(); }
-void glTexParameteri(GLenum target, GLenum pname, GLint param) { TRACE(); }
-void glTranslatef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
-void glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
-void glViewport(GLint x, GLint y, GLsizei width, GLsizei height) { TRACE(); }
+// XXX GL
+FUNCTION_2(glBindBuffer);
+FUNCTION_4(glBufferData);
+FUNCTION_2(glDeleteBuffers);
+FUNCTION_2(glFogx);
+
+// int glDepthRangef(void) { TRACE(); }
+FUNCTION_2(glDepthRangef);
+
+// int glOrthof(void) { TRACE(); }
+FUNCTION_6(glOrthof);
+
+// void glAlphaFunc(GLenum func, GLclampf ref) { TRACE(); }
+FUNCTION_2(glAlphaFunc);
+
+// void glBindTexture(GLenum target, GLuint texture) { TRACE(); }
+FUNCTION_2(glBindTexture);
+
+// void glBlendFunc(GLenum sfactor, GLenum dfactor) { TRACE(); }
+FUNCTION_2(glBlendFunc);
+
+// void glClear(GLbitfield mask) { TRACE(); }
+FUNCTION_1(glClear);
+
+// void glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) { TRACE(); }
+FUNCTION_4(glClearColor);
+
+// void glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) { TRACE(); }
+FUNCTION_4(glColor4f);
+
+// void glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) { TRACE(); }
+FUNCTION_4(glColorMask);
+
+// void glColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
+FUNCTION_4(glColorPointer);
+
+// void glCullFace(GLenum mode) { TRACE(); }
+FUNCTION_1(glCullFace);
+
+// void glDeleteTextures(GLsizei n, const GLuint *textures) { TRACE(); }
+FUNCTION_2(glDeleteTextures);
+
+// void glDepthFunc(GLenum func) { TRACE(); }
+FUNCTION_1(glDepthFunc);
+
+// void glDepthMask(GLboolean flag) { TRACE(); }
+FUNCTION_1(glDepthMask);
+
+// void glDisable(GLenum cap) { TRACE(); }
+FUNCTION_1(glDisable);
+
+// void glDisableClientState(GLenum cap) { TRACE(); }
+FUNCTION_1(glDisableClientState);
+
+// void glDrawArrays(GLenum mode, GLint first, GLsizei count) { TRACE(); }
+FUNCTION_3(glDrawArrays);
+
+// void glEnable(GLenum cap) { TRACE(); }
+FUNCTION_1(glEnable);
+
+// void glEnableClientState(GLenum cap) { TRACE(); }
+FUNCTION_1(glEnableClientState);
+
+// void glFogf(GLenum pname, GLfloat param) { TRACE(); }
+FUNCTION_2(glFogf);
+
+// void glFogfv(GLenum pname, const GLfloat *params) { TRACE(); }
+FUNCTION_2(glFogfv);
+
+// void glGenTextures(GLsizei n, GLuint *textures) { TRACE(); }
+FUNCTION_2(glGenTextures);
+
+// void glGetFloatv(GLenum pname, GLfloat *params) { TRACE(); }
+FUNCTION_2(glGetFloatv);
+
+// void glHint(GLenum target, GLenum mode) { TRACE(); }
+FUNCTION_2(glHint);
+
+// void glLineWidth(GLfloat width) { TRACE(); }
+FUNCTION_1(glLineWidth);
+
+// void glLoadIdentity(void) { TRACE(); }
+FUNCTION_0(glLoadIdentity);
+
+// void glMatrixMode(GLenum mode) { TRACE(); }
+FUNCTION_1(glMatrixMode);
+
+// void glMultMatrixf(const GLfloat *m) { TRACE(); }
+FUNCTION_1(glMultMatrixf);
+
+// void glNormal3f(GLfloat nx, GLfloat ny, GLfloat nz) { TRACE(); }
+FUNCTION_3(glNormal3f);
+
+// void glPolygonOffset(GLfloat factor, GLfloat units) { TRACE(); }
+FUNCTION_3(glPolygonOffset);
+
+// void glPopMatrix(void) { TRACE(); }
+FUNCTION_0(glPopMatrix);
+
+// void glPushMatrix(void) { TRACE(); }
+FUNCTION_0(glPushMatrix);
+
+// void glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
+FUNCTION_4(glRotatef);
+
+// void glScalef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
+FUNCTION_3(glScalef);
+
+// void glScissor(GLint x, GLint y, GLsizei width, GLsizei height) { TRACE(); }
+FUNCTION_4(glScissor);
+
+// void glShadeModel(GLenum mode) { TRACE(); }
+FUNCTION_1(glShadeModel);
+
+// void glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
+FUNCTION_4(glTexCoordPointer);
+
+// void glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels) { TRACE(); }
+FUNCTION_9(glTexImage2D);
+
+// void glTexParameteri(GLenum target, GLenum pname, GLint param) { TRACE(); }
+FUNCTION_3(glTexParameteri);
+
+// void glTranslatef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
+FUNCTION_3(glTranslatef);
+
+// void glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
+FUNCTION_4(glVertexPointer);
+
+// void glViewport(GLint x, GLint y, GLsizei width, GLsizei height) { TRACE(); }
+FUNCTION_4(glViewport);

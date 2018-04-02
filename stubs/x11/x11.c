@@ -36,22 +36,25 @@ typedef struct {
 } XWindowAttributes;
 
 int XTranslateCoordinates(Display *display, Window src_w, Window dest_w, int src_x, int src_y, int *dest_x_return, int *dest_y_return, Window *child_return) {
-  printf("XTranslateCoordinates(display* = 0x%x, window = %d)\n", display, src_w);
+  // printf("XTranslateCoordinates(display* = 0x%x, window = %d)\n", display, src_w);
 
-  // *dest_x_return = 0;
-  // *dest_y_return = 0;
-  // *child_return = 0xdeadbeef;
-  //
+  *dest_x_return = src_x;
+  *dest_y_return = src_y;
+  *child_return = 0xdeadbeef;
+
   return 1;
 }
 
-int XGetWindowAttributes(Display *display, Window w, void* *window_attributes_return) {
-  printf("XGetWindowAttributes(window = %d)\n", w);
+int XGetWindowAttributes(Display *display, Window w, XWindowAttributes *window_attributes_return) {
+  // printf("XGetWindowAttributes(window = %d)\n", w);
 
-  // memset(window_attributes_return, 0, sizeof(XWindowAttributes));
-  //
-  // window_attributes_return->visual = 0xdeadbeef;
-  // window_attributes_return->screen = 0xdeadbeef;
+  memset(window_attributes_return, 0, sizeof(XWindowAttributes));
+
+  window_attributes_return->width = 848;
+  window_attributes_return->height = 480;
+
+  window_attributes_return->visual = 0xdeadbeef;
+  window_attributes_return->screen = 0xdeadbeef;
 
   return 1;
 }

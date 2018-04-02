@@ -28,6 +28,7 @@ static uint32_t ___syscall(const char* name, void* ptr) {
 #define ARGS_6() void* _a[6] = { a, b, c, d, e, f };
 #define ARGS_7() void* _a[7] = { a, b, c, d, e, f, g };
 #define ARGS_8() void* _a[8] = { a, b, c, d, e, f, g, h };
+#define ARGS_9() void* _a[9] = { a, b, c, d, e, f, g, h, i };
 
 #define FUNCTION_0(x) int x(void) { return SYSCALL(NULL); }
 #define FUNCTION_1(x) int x(int a) { ARGS_1(); return SYSCALL(_a); }
@@ -38,5 +39,6 @@ static uint32_t ___syscall(const char* name, void* ptr) {
 #define FUNCTION_6(x) int x(int a, int b, int c, int d, int e, int f) { ARGS_6(); return SYSCALL(_a); }
 #define FUNCTION_7(x) int x(int a, int b, int c, int d, int e, int f, int g) { ARGS_7(); return SYSCALL(_a); }
 #define FUNCTION_8(x) int x(int a, int b, int c, int d, int e, int f, int g, int h) { ARGS_8(); return SYSCALL(_a); }
+#define FUNCTION_9(x) int x(int a, int b, int c, int d, int e, int f, int g, int h, int i) { ARGS_9(); return SYSCALL(_a); }
 
 #define TRACE() (printf("%s()\n", __FUNCTION__))

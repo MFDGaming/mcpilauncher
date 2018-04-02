@@ -12,11 +12,11 @@ FUNCTION_1(SDL_WM_GrabInput);
 FUNCTION_1(SDL_ShowCursor);
 
 static void x_lock_function(void) {
-  printf("x_lock_function()\n");
+  // printf("x_lock_function()\n");
 }
 
 static void x_unlock_function(void) {
-  printf("x_unlock_function()\n");
+  // printf("x_unlock_function()\n");
 }
 
 // From SDL
@@ -39,7 +39,7 @@ typedef struct {
      struct {
       void* display; // 4
       Window window; // 4
-      
+
       int filler;
 
       void (*lock_func)(void); // 4
