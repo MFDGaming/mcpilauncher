@@ -7842,16 +7842,27 @@ static int host_to_target_cpu_mask(const unsigned long *host_mask,
 #define TRACE() (printf("`%s()` called!\n", name))
 #define TO(type, name) ((type) g2h(name))
 
-#define _AI(a, b) int a = ARGUMENT(arguments, int, b)
-#define AI() _AI(a, 0)
-#define AII() _AI(a, 0); _AI(b, 1)
-#define AIII() _AI(a, 0); _AI(b, 1); _AI(c, 2)
-#define AIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3)
-#define AIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4)
-#define AIIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4); _AI(f, 5)
-#define AIIIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4); _AI(f, 5); _AI(g, 6)
-#define AIIIIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4); _AI(f, 5); _AI(g, 6); _AI(h, 7)
-#define AIIIIIIIII() _AI(a, 0); _AI(b, 1); _AI(c, 2); _AI(d, 3); _AI(e, 4); _AI(f, 5); _AI(g, 6); _AI(h, 7); _AI(i, 8)
+#define FUNCTION_I(a, b) int a = ARGUMENT(arguments, int, b)
+#define AI() FUNCTION_I(a, 0)
+#define AII() FUNCTION_I(a, 0); FUNCTION_I(b, 1)
+#define AIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2)
+#define AIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3)
+#define AIIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3); FUNCTION_I(e, 4)
+#define AIIIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3); FUNCTION_I(e, 4); FUNCTION_I(f, 5)
+#define AIIIIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3); FUNCTION_I(e, 4); FUNCTION_I(f, 5); FUNCTION_I(g, 6)
+#define AIIIIIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3); FUNCTION_I(e, 4); FUNCTION_I(f, 5); FUNCTION_I(g, 6); FUNCTION_I(h, 7)
+#define AIIIIIIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3); FUNCTION_I(e, 4); FUNCTION_I(f, 5); FUNCTION_I(g, 6); FUNCTION_I(h, 7); FUNCTION_I(i, 8)
+
+#define FUNCTION_F(a, b) float a = ARGUMENT(arguments, float, b)
+// #define AF() _AF(a, 0)
+// #define AFF() _AF(a, 0); _AF(b, 1)
+// #define AFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2)
+// #define AFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3)
+// #define AFFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3); _AF(e, 4)
+// #define AFFFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3); _AF(e, 4); _AF(f, 5)
+// #define AFFFFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3); _AF(e, 4); _AF(f, 5); _AF(g, 6)
+// #define AFFFFFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3); _AF(e, 4); _AF(f, 5); _AF(g, 6); _AF(h, 7)
+// #define AFFFFFFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3); _AF(e, 4); _AF(f, 5); _AF(g, 6); _AF(h, 7); _AF(i, 8)
 
 int* _g2h(uint32_t x);
 int* _g2h(uint32_t x) { return (int*) g2h(x); }
@@ -7982,12 +7993,12 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       }
       // int glOrthof(void) { TRACE(); }
       else if(NAME_IS("glOrthof")) {
-        float a = ARGUMENT(arguments, float, 0);
-        float b = ARGUMENT(arguments, float, 4);
-        float c = ARGUMENT(arguments, float, 8);
-        float d = ARGUMENT(arguments, float, 12);
-        float e = ARGUMENT(arguments, float, 16);
-        float f = ARGUMENT(arguments, float, 20);
+        FUNCTION_F(a, 0);
+        FUNCTION_F(b, 1);
+        FUNCTION_F(c, 2);
+        FUNCTION_F(d, 3);
+        FUNCTION_F(e, 4);
+        FUNCTION_F(f, 5);
 
         glOrthof(a,b,c,d,e,f);
         ret = 0;
@@ -8020,13 +8031,21 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       }
       // // void glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) { TRACE(); }
       else if(NAME_IS("glClearColor")) {
-        AIIII();
+        FUNCTION_F(a, 0);
+        FUNCTION_F(b, 1);
+        FUNCTION_F(c, 2);
+        FUNCTION_F(d, 3);
+
         glClearColor(a, b, c, d);
         ret = 0;
       }
       // void glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) { TRACE(); }
       else if(NAME_IS("glColor4f")) {
-        AIIII();
+        FUNCTION_F(a, 0);
+        FUNCTION_F(b, 1);
+        FUNCTION_F(c, 2);
+        FUNCTION_F(d, 3);
+
         glColor4f(a,b,c,d);
         ret = 0;
       }
@@ -8098,26 +8117,34 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       }
       // void glFogf(GLenum pname, GLfloat param) { TRACE(); }
       else if(NAME_IS("glFogf")) {
-        AII();
-        glFogf(a,b);
+        FUNCTION_I(a, 0);
+        FUNCTION_F(b, 1);
+
+        glFogf(a, b);
         ret = 0;
       }
       // void glFogfv(GLenum pname, const GLfloat *params) { TRACE(); }
       else if(NAME_IS("glFogfv")) {
-        AII();
-        glFogfv(a,g2h(b));
+        FUNCTION_I(a, 0);
+        FUNCTION_I(b, 1);
+
+        glFogfv(a, g2h(b));
         ret = 0;
       }
       // void glGenTextures(GLsizei n, GLuint *textures) { TRACE(); }
       else if(NAME_IS("glGenTextures")) {
-        AII();
-        glGenTextures(a,g2h(b));
+        FUNCTION_I(a, 0);
+        FUNCTION_I(b, 1);
+        // int* b = ((int*) (arguments + 4));
+
+        glGenTextures(a, g2h(b));
         ret = 0;
       }
       // void glGetFloatv(GLenum pname, GLfloat *params) { TRACE(); }
       else if(NAME_IS("glGetFloatv")) {
         AII();
-        glGetFloatv(a,g2h(b));
+
+        glGetFloatv(a, g2h(b));
         ret = 0;
       }
       // void glHint(GLenum target, GLenum mode) { TRACE(); }
@@ -8128,7 +8155,8 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       }
       // void glLineWidth(GLfloat width) { TRACE(); }
       else if(NAME_IS("glLineWidth")) {
-        AI();
+        FUNCTION_F(a, 0);
+
         glLineWidth(a);
         ret = 0;
       }
@@ -8151,14 +8179,18 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       }
       // void glNormal3f(GLfloat nx, GLfloat ny, GLfloat nz) { TRACE(); }
       else if(NAME_IS("glNormal3f")) {
-        AIII();
-        glNormal3f(a,b,c);
+        FUNCTION_F(a, 0);
+        FUNCTION_F(b, 1);
+        FUNCTION_F(c, 2);
+
+        glNormal3f(a, b, c);
         ret = 0;
       }
       // void glPolygonOffset(GLfloat factor, GLfloat units) { TRACE(); }
       else if(NAME_IS("glPolygonOffset")) {
-        AII();
-        glPolygonOffset(a,b);
+        FUNCTION_F(a, 0);
+        FUNCTION_F(b, 1);
+        glPolygonOffset(a, b);
         ret = 0;
       }
 
@@ -8174,13 +8206,20 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       }
       // void glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
       else if(NAME_IS("glRotatef")) {
-        AIIII();
+        FUNCTION_F(a, 0);
+        FUNCTION_F(b, 1);
+        FUNCTION_F(c, 2);
+        FUNCTION_F(d, 3);
+
         glRotatef(a,b,c,d);
         ret = 0;
       }
       // void glScalef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
       else if(NAME_IS("glScalef")) {
-        AIII();
+        FUNCTION_F(a, 0);
+        FUNCTION_F(b, 1);
+        FUNCTION_F(c, 2);
+
         glScalef(a,b,c);
         ret = 0;
       }
@@ -8216,7 +8255,10 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       }
       // void glTranslatef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
       else if(NAME_IS("glTranslatef")) {
-        AIII();
+        FUNCTION_F(a, 0);
+        FUNCTION_F(b, 1);
+        FUNCTION_F(c, 2);
+
         glTranslatef(a,b,c);
         ret = 0;
       }
