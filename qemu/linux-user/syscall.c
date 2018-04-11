@@ -7989,7 +7989,7 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
         int size = arguments[0];
         unsigned int type = arguments[1];
         int stride = arguments[2];
-        void* ptr = g2h(arguments[3]);
+        void* ptr = CAST(void*, arguments[3]);
 
         glColorPointer(size, type, stride, ptr);
         ret = 0;
@@ -8018,7 +8018,7 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
         int size = arguments[0];
         unsigned int type = arguments[1];
         int stride = arguments[2];
-        void* ptr = g2h(arguments[3]);
+        void* ptr = CAST(void*, arguments[3]);
 
         glTexCoordPointer(size, type, stride, ptr);
         ret = 0;
@@ -8045,7 +8045,7 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
         int size = arguments[0];
         unsigned int type = arguments[1];
         int stride = arguments[2];
-        void* ptr = g2h(arguments[3]);
+        void* ptr = CAST(void*, arguments[3]);
 
         glVertexPointer(size, type, stride, ptr);
         ret = 0;
@@ -8369,8 +8369,7 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
 
       HANDLE("eglSwapBuffers") {
         printf("EGL swap buffer\n");
-        eglSwapBuffers(eDisplay, eSurface);
-        ret = 0;
+        ret = eglSwapBuffers(eDisplay, eSurface);
       }
 
       HANDLE("eglDestroySurface") {
