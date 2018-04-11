@@ -1,6 +1,4 @@
-#include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 
 #include "../syscall.h"
 
@@ -12,32 +10,30 @@ typedef unsigned long Colormap;
 typedef void Screen;
 
 typedef struct {
-        int x, y;
-        int width, height;
-        int border_width;
-        int depth;
-        Visual *visual;
-        Window root;
-        int class;
-        int bit_gravity;
-        int win_gravity;
-        int backing_store;
-        unsigned long backing_planes;
-        unsigned long backing_pixel;
-        Bool save_under;
-        Colormap colormap;
-        Bool map_installed;
-        int map_state;
-        long all_event_masks;
-        long your_event_mask;
-        long do_not_propagate_mask;
-        Bool override_redirect;
-        Screen *screen;
+  int x, y;
+  int width, height;
+  int border_width;
+  int depth;
+  Visual *visual;
+  Window root;
+  int class;
+  int bit_gravity;
+  int win_gravity;
+  int backing_store;
+  unsigned long backing_planes;
+  unsigned long backing_pixel;
+  Bool save_under;
+  Colormap colormap;
+  Bool map_installed;
+  int map_state;
+  long all_event_masks;
+  long your_event_mask;
+  long do_not_propagate_mask;
+  Bool override_redirect;
+  Screen *screen;
 } XWindowAttributes;
 
 int XTranslateCoordinates(Display *display, Window src_w, Window dest_w, int src_x, int src_y, int *dest_x_return, int *dest_y_return, Window *child_return) {
-  // printf("XTranslateCoordinates(display* = 0x%x, window = %d)\n", display, src_w);
-
   *dest_x_return = src_x;
   *dest_y_return = src_y;
   *child_return = 0xdeadbeef;
@@ -46,8 +42,6 @@ int XTranslateCoordinates(Display *display, Window src_w, Window dest_w, int src
 }
 
 int XGetWindowAttributes(Display *display, Window w, XWindowAttributes *window_attributes_return) {
-  // printf("XGetWindowAttributes(window = %d)\n", w);
-
   memset(window_attributes_return, 0, sizeof(XWindowAttributes));
 
   window_attributes_return->width = 848;
@@ -58,6 +52,3 @@ int XGetWindowAttributes(Display *display, Window w, XWindowAttributes *window_a
 
   return 1;
 }
-
-// FUNCTION_8(XTranslateCoordinates);
-// FUNCTION_3(XGetWindowAttributes);

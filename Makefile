@@ -27,7 +27,8 @@ run:
 	@$(QEMU) $(QFLAGS) $(MINECRAFT)
 
 trace:
-	$(APITRACE) trace --api egl $(QEMU) $(QFLAGS) $(MINECRAFT)
+	@$(RM) qemu-arm.trace
+	@$(APITRACE) trace --api egl $(QEMU) $(QFLAGS) $(MINECRAFT)
 
 gdb:
 	@$(DEBUGGER) --args $(QEMU) -g 1337 $(QFLAGS) $(MINECRAFT)

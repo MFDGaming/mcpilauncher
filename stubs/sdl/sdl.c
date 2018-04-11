@@ -3,23 +3,6 @@
 
 #include "../syscall.h"
 
-FUNCTION_0(SDL_Quit);
-FUNCTION_1(SDL_PollEvent);
-FUNCTION_1(SDL_Init);
-FUNCTION_4(SDL_SetVideoMode);
-FUNCTION_2(SDL_WM_SetCaption);
-FUNCTION_1(SDL_WM_GrabInput);
-FUNCTION_1(SDL_ShowCursor);
-
-static void x_lock_function(void) {
-  // printf("x_lock_function()\n");
-}
-
-static void x_unlock_function(void) {
-  // printf("x_unlock_function()\n");
-}
-
-// From SDL
 typedef enum {
   SDL_SYSWM_X11
 } SDL_SYSWM_TYPE;
@@ -33,17 +16,17 @@ typedef struct {
 typedef unsigned long Window;
 
 typedef struct {
-  SDL_version version; // 3
-  SDL_SYSWM_TYPE subsystem; // 1
+  SDL_version version;
+  SDL_SYSWM_TYPE subsystem;
   union {
-     struct {
-      void* display; // 4
-      Window window; // 4
+    struct {
+      void* display;
+      Window window;
 
-      int filler;
+      int filler; // XXX
 
-      void (*lock_func)(void); // 4
-      void (*unlock_func)(void); // 4
+      void (*lock_func)(void);
+      void (*unlock_func)(void);
 
       Window fswindow;
       Window wmwindow;
@@ -52,6 +35,18 @@ typedef struct {
     } x11;
   } info;
 } SDL_SysWMinfo;
+
+FUNCTION_0(SDL_Quit)
+FUNCTION_1(SDL_PollEvent)
+FUNCTION_4(SDL_SetVideoMode)
+FUNCTION_1(SDL_Init)
+FUNCTION_2(SDL_WM_SetCaption)
+FUNCTION_1(SDL_WM_GrabInput)
+FUNCTION_1(SDL_ShowCursor)
+
+// XXX
+static void x_lock_function(void) { }
+static void x_unlock_function(void) { }
 
 int SDL_GetWMInfo(void* a) {
   memset(a, 0, sizeof(SDL_SysWMinfo));

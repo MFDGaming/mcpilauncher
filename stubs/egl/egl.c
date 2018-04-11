@@ -1,180 +1,212 @@
-#include <stdio.h>
-
 #include "../syscall.h"
 
-#define TRACE() (printf("%s()\n", __FUNCTION__))
-
-typedef void* EGLDisplay;
-typedef void* EGLConfig;
-typedef void* EGLSurface;
-typedef void* EGLContext;
-typedef void* EGLNativeWindowType;
-typedef void* EGLClientBuffer;
-typedef void* EGLNativeDisplayType;
-typedef unsigned int EGLint;
-typedef unsigned int EGLenum;
-typedef unsigned int EGLBoolean;
-
-typedef int _DWORD;
-typedef void GLvoid;
-typedef unsigned int GLenum;
-typedef unsigned char GLboolean;
-typedef unsigned int GLbitfield;
-typedef void GLvoid;
-typedef signed char GLbyte;
-typedef short GLshort;
-typedef int GLint;
-typedef unsigned char GLubyte;
-typedef unsigned short GLushort;
-typedef unsigned int GLuint;
-typedef int GLsizei;
-typedef float GLfloat;
-typedef float GLclampf;
-typedef double GLdouble;
-typedef double GLclampd;
-typedef ssize_t GLsizeiptr;
-typedef int GLfixed;
+#include <stdio.h>
 
 // EGL
-FUNCTION_1(eglGetDisplay);
-FUNCTION_0(eglInitialize);
-FUNCTION_5(eglChooseConfig);
-FUNCTION_1(eglBindAPI);
-FUNCTION_4(eglCreateContext);
-FUNCTION_4(eglCreateWindowSurface);
-FUNCTION_4(eglMakeCurrent);
-FUNCTION_2(eglSwapBuffers);
-FUNCTION_2(eglDestroySurface);
-FUNCTION_1(eglTerminate);
+// -----------------------------------------------------------------------------
+FUNCTION_1(eglGetDisplay)
+FUNCTION_0(eglInitialize)
+FUNCTION_5(eglChooseConfig)
+FUNCTION_1(eglBindAPI)
+FUNCTION_4(eglCreateContext)
+FUNCTION_4(eglCreateWindowSurface)
+FUNCTION_4(eglMakeCurrent)
+FUNCTION_2(eglSwapBuffers)
+FUNCTION_2(eglDestroySurface)
+FUNCTION_1(eglTerminate)
+// -----------------------------------------------------------------------------
 
-// XXX GL
-FUNCTION_2(glBindBuffer);
-FUNCTION_4(glBufferData);
-FUNCTION_2(glDeleteBuffers);
-FUNCTION_2(glFogx);
+// XXX GL functions that use pointers
+// -----------------------------------------------------------------------------
+// void glBufferData(unsigned int target, ssize_t size, const void *data, unsigned int usage)
+void glBufferData(unsigned int a, ssize_t b, const void* c, unsigned int d) {
+  uint32_t s[4] = { a, (uint32_t) b, (uint32_t) c, d};
+  SYSCALL(&s);
+}
 
-// int glDepthRangef(void) { TRACE(); }
-FUNCTION_2(glDepthRangef);
+// void glDeleteBuffers(int n, const unsigned int *buffers)
+void glDeleteBuffers(int a, const unsigned int* b) {
+  uint32_t s[2] = { a, (uint32_t) b };
+  SYSCALL(&s);
+}
 
-// int glOrthof(void) { TRACE(); }
-FUNCTION_6(glOrthof);
+// void glColorPointer(int size, unsigned int type, int stride, const void *ptr)
+void glColorPointer(int a, unsigned int b, int c, const void* d) {
+  uint32_t s[4] = { a, b, c, (uint32_t) d };
+  SYSCALL(&s);
+}
 
-// void glAlphaFunc(GLenum func, GLclampf ref) { TRACE(); }
-FUNCTION_2(glAlphaFunc);
+// void glDeleteTextures(int n, const unsigned int *textures)
+void glDeleteTextures(int a, const unsigned int* b) {
+  uint32_t s[2] = { a, (uint32_t) b };
+  SYSCALL(&s);
+}
 
-// void glBindTexture(GLenum target, GLuint texture) { TRACE(); }
-FUNCTION_2(glBindTexture);
+// void glGenTextures(int n, unsigned int *textures)
+void glGenTextures(int a, unsigned int* b) {
+  uint32_t s[2] = { a, (uint32_t) b };
+  SYSCALL(&s);
+}
 
-// void glBlendFunc(GLenum sfactor, GLenum dfactor) { TRACE(); }
-FUNCTION_2(glBlendFunc);
+// void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr)
+void glTexCoordPointer(int a, unsigned int b, int c, const void* d) {
+  uint32_t s[4] = { a, b, c, (uint32_t) d };
+  SYSCALL(&s);
+}
 
-// void glClear(GLbitfield mask) { TRACE(); }
-FUNCTION_1(glClear);
+// void glTexImage2D(unsigned int target, int level, int internalFormat, int width, int height, int border, unsigned int format, unsigned int type, const void *pixels)
+void glTexImage2D(unsigned int a, int b, int c, int d, int e, int f, unsigned int g, unsigned int h, const void* i) {
+  uint32_t s[9] = { a, b, c, d, e, f, g, h, (uint32_t) i };
+  SYSCALL(&s);
+}
 
-// void glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) { TRACE(); }
-FUNCTION_4(glClearColor);
+// void glVertexPointer(int size, unsigned int type, int stride, const void *ptr)
+void glVertexPointer(int a, unsigned int b, int c, const void* d) {
+  uint32_t s[4] = { a, b, c, (uint32_t) d };
+  SYSCALL(&s);
+}
 
-// void glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) { TRACE(); }
-FUNCTION_4(glColor4f);
+// void glMultMatrixf(const float *m)
+void glMultMatrixf(const float* a) {
+  uint32_t s[1] = { (int*) a };
+  SYSCALL(&s);
+}
 
-// void glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) { TRACE(); }
-FUNCTION_4(glColorMask);
+// void glGetFloatv(unsigned int pname, float *params)
+void glGetFloatv(unsigned int a, float* b) {
+  uint32_t s[2] = { a, (int*) b };
+  SYSCALL(&s);
+}
 
-// void glColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
-FUNCTION_4(glColorPointer);
+// void glFogfv(unsigned int pname, const float *params)
+void glFogfv(unsigned int a, const float* b) {
+  uint32_t s[2] = { a, (int*) b };
+  SYSCALL(&s);
+}
+// -----------------------------------------------------------------------------
 
-// void glCullFace(GLenum mode) { TRACE(); }
-FUNCTION_1(glCullFace);
+// XXX GL functions that use floats (dirty)
+// -----------------------------------------------------------------------------
+// void glAlphaFunc(unsigned int func, float ref)
+void glAlphaFunc(unsigned int func, float ref) {
+  uint32_t s[2] = { func, *(uint32_t*) &ref };
+  SYSCALL(&s);
+}
 
-// void glDeleteTextures(GLsizei n, const GLuint *textures) { TRACE(); }
-FUNCTION_2(glDeleteTextures);
+// void glFogf(unsigned int pname, float param)
+void glFogf(unsigned int pname, float param) {
+  CONVERT(b, param);
+  uint32_t s[2] = { pname, (uint32_t) b };
+  SYSCALL(&s);
+}
+// -----------------------------------------------------------------------------
 
-// void glDepthFunc(GLenum func) { TRACE(); }
-FUNCTION_1(glDepthFunc);
+// XXX GL functions that use floats (pure)
+// -----------------------------------------------------------------------------
+// void glClearColor(float red, float green, float blue, float alpha)
+FUNCTION_f4(glClearColor)
 
-// void glDepthMask(GLboolean flag) { TRACE(); }
-FUNCTION_1(glDepthMask);
+// void glColor4f(float red, float green, float blue, float alpha)
+FUNCTION_f4(glColor4f)
 
-// void glDisable(GLenum cap) { TRACE(); }
-FUNCTION_1(glDisable);
+// void glLineWidth(float width)
+FUNCTION_f1(glLineWidth)
 
-// void glDisableClientState(GLenum cap) { TRACE(); }
-FUNCTION_1(glDisableClientState);
+// void glNormal3f(float nx, float ny, float nz)
+FUNCTION_f3(glNormal3f)
 
-// void glDrawArrays(GLenum mode, GLint first, GLsizei count) { TRACE(); }
-FUNCTION_3(glDrawArrays);
+// void glPolygonOffset(float factor, float units)
+FUNCTION_f3(glPolygonOffset)
 
-// void glEnable(GLenum cap) { TRACE(); }
-FUNCTION_1(glEnable);
+// void glRotatef(float angle, float x, float y, float z)
+FUNCTION_f4(glRotatef)
 
-// void glEnableClientState(GLenum cap) { TRACE(); }
-FUNCTION_1(glEnableClientState);
+// void glScalef(float x, float y, float z)
+FUNCTION_f3(glScalef)
 
-// void glFogf(GLenum pname, GLfloat param) { TRACE(); }
-FUNCTION_2(glFogf);
+// void glTranslatef(float x, float y, float z)
+FUNCTION_f3(glTranslatef)
 
-// void glFogfv(GLenum pname, const GLfloat *params) { TRACE(); }
-FUNCTION_2(glFogfv);
+// void glDepthRangef(float near, float far)
+FUNCTION_f2(glDepthRangef)
 
-// void glGenTextures(GLsizei n, GLuint *textures) { TRACE(); }
-FUNCTION_2(glGenTextures);
+// void glOrthof(float left, float right, float bottom, float top, float near, float far)
+FUNCTION_f6(glOrthof)
+// -----------------------------------------------------------------------------
 
-// void glGetFloatv(GLenum pname, GLfloat *params) { TRACE(); }
-FUNCTION_2(glGetFloatv);
+// XXX GL integer operations
+// -----------------------------------------------------------------------------
+// void glBindBuffer(unsigned int target, unsigned int buffer)
+FUNCTION_2(glBindBuffer)
 
-// void glHint(GLenum target, GLenum mode) { TRACE(); }
-FUNCTION_2(glHint);
+// void glFogx(unsigned int pname, int param);
+FUNCTION_2(glFogx)
 
-// void glLineWidth(GLfloat width) { TRACE(); }
-FUNCTION_1(glLineWidth);
+// void glBindTexture(unsigned int target, unsigned int texture)
+FUNCTION_2(glBindTexture)
 
-// void glLoadIdentity(void) { TRACE(); }
-FUNCTION_0(glLoadIdentity);
+// void glBlendFunc(unsigned int sfactor, unsigned int dfactor)
+FUNCTION_2(glBlendFunc)
 
-// void glMatrixMode(GLenum mode) { TRACE(); }
-FUNCTION_1(glMatrixMode);
+// void glClear(unsigned int mask)
+FUNCTION_1(glClear)
 
-// void glMultMatrixf(const GLfloat *m) { TRACE(); }
-FUNCTION_1(glMultMatrixf);
+// void glColorMask(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
+void glColorMask(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha) {
+  uint32_t s[4] = { (uint32_t) red, (uint32_t) green, (uint32_t) blue, (uint32_t) alpha };
+  SYSCALL(&s);
+}
 
-// void glNormal3f(GLfloat nx, GLfloat ny, GLfloat nz) { TRACE(); }
-FUNCTION_3(glNormal3f);
+// void glCullFace(unsigned int mode)
+FUNCTION_1(glCullFace)
 
-// void glPolygonOffset(GLfloat factor, GLfloat units) { TRACE(); }
-FUNCTION_3(glPolygonOffset);
+// void glDepthFunc(unsigned int func)
+FUNCTION_1(glDepthFunc)
 
-// void glPopMatrix(void) { TRACE(); }
-FUNCTION_0(glPopMatrix);
+// void glDepthMask(unsigned char flag)
+void glDepthMask(unsigned char flag) {
+  uint32_t s[1] = { (uint32_t) flag };
+  SYSCALL(&s);
+}
 
-// void glPushMatrix(void) { TRACE(); }
-FUNCTION_0(glPushMatrix);
+// void glDisable(unsigned int cap)
+FUNCTION_1(glDisable)
 
-// void glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
-FUNCTION_4(glRotatef);
+// void glDisableClientState(unsigned int cap)
+FUNCTION_1(glDisableClientState)
 
-// void glScalef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
-FUNCTION_3(glScalef);
+// void glDrawArrays(unsigned int mode, int first, int count)
+FUNCTION_3(glDrawArrays)
 
-// void glScissor(GLint x, GLint y, GLsizei width, GLsizei height) { TRACE(); }
-FUNCTION_4(glScissor);
+// void glEnable(unsigned int cap)
+FUNCTION_1(glEnable)
 
-// void glShadeModel(GLenum mode) { TRACE(); }
-FUNCTION_1(glShadeModel);
+// void glEnableClientState(unsigned int cap)
+FUNCTION_1(glEnableClientState)
 
-// void glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
-FUNCTION_4(glTexCoordPointer);
+// void glHint(unsigned int target, unsigned int mode)
+FUNCTION_2(glHint)
 
-// void glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels) { TRACE(); }
-FUNCTION_9(glTexImage2D);
+// void glLoadIdentity(void)
+FUNCTION_0(glLoadIdentity)
 
-// void glTexParameteri(GLenum target, GLenum pname, GLint param) { TRACE(); }
-FUNCTION_3(glTexParameteri);
+// void glMatrixMode(unsigned int mode)
+FUNCTION_1(glMatrixMode)
 
-// void glTranslatef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
-FUNCTION_3(glTranslatef);
+// void glPopMatrix(void)
+FUNCTION_0(glPopMatrix)
 
-// void glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
-FUNCTION_4(glVertexPointer);
+// void glPushMatrix(void)
+FUNCTION_0(glPushMatrix)
 
-// void glViewport(GLint x, GLint y, GLsizei width, GLsizei height) { TRACE(); }
-FUNCTION_4(glViewport);
+// void glScissor(int x, int y, int width, int height)
+FUNCTION_4(glScissor)
+
+// void glShadeModel(unsigned int mode)
+FUNCTION_1(glShadeModel)
+
+// void glTexParameteri(unsigned int target, unsigned int pname, int param)
+FUNCTION_3(glTexParameteri)
+
+// void glViewport(int x, int y, int width, int height)
+FUNCTION_4(glViewport)

@@ -7830,6 +7830,7 @@ static int host_to_target_cpu_mask(const unsigned long *host_mask,
     return 0;
 }
 
+// -----------------------------------------------------------------------------
 #include <SDL/SDL.h>
 #include <SDL/SDL_syswm.h>
 #include <EGL/egl.h>
@@ -7837,40 +7838,36 @@ static int host_to_target_cpu_mask(const unsigned long *host_mask,
 #include <X11/Xlib.h>
 #include <dlfcn.h>
 
-#define ARGUMENT(name, type, offset) (*((type*) (name + (offset * 4))))
-#define NAME_IS(s) (strcmp(s, name) == 0)
 #define TRACE() (printf("`%s()` called!\n", name))
-#define TO(type, name) ((type) g2h(name))
+#define CAST(type, name) *((type*)&name);
 
-#define FUNCTION_I(a, b) int a = ARGUMENT(arguments, int, b)
-#define AI() FUNCTION_I(a, 0)
-#define AII() FUNCTION_I(a, 0); FUNCTION_I(b, 1)
-#define AIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2)
-#define AIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3)
-#define AIIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3); FUNCTION_I(e, 4)
-#define AIIIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3); FUNCTION_I(e, 4); FUNCTION_I(f, 5)
-#define AIIIIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3); FUNCTION_I(e, 4); FUNCTION_I(f, 5); FUNCTION_I(g, 6)
-#define AIIIIIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3); FUNCTION_I(e, 4); FUNCTION_I(f, 5); FUNCTION_I(g, 6); FUNCTION_I(h, 7)
-#define AIIIIIIIII() FUNCTION_I(a, 0); FUNCTION_I(b, 1); FUNCTION_I(c, 2); FUNCTION_I(d, 3); FUNCTION_I(e, 4); FUNCTION_I(f, 5); FUNCTION_I(g, 6); FUNCTION_I(h, 7); FUNCTION_I(i, 8)
+#define ARGUMENT_i(a, b) int a = arguments[b]
+#define ARGUMENT_f(a, b) float a = CAST(float, arguments[b])
 
-#define FUNCTION_F(a, b) float a = ARGUMENT(arguments, float, b)
-// #define AF() _AF(a, 0)
-// #define AFF() _AF(a, 0); _AF(b, 1)
-// #define AFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2)
-// #define AFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3)
-// #define AFFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3); _AF(e, 4)
-// #define AFFFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3); _AF(e, 4); _AF(f, 5)
-// #define AFFFFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3); _AF(e, 4); _AF(f, 5); _AF(g, 6)
-// #define AFFFFFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3); _AF(e, 4); _AF(f, 5); _AF(g, 6); _AF(h, 7)
-// #define AFFFFFFFFF() _AF(a, 0); _AF(b, 1); _AF(c, 2); _AF(d, 3); _AF(e, 4); _AF(f, 5); _AF(g, 6); _AF(h, 7); _AF(i, 8)
+#define FUNCTION_1() ARGUMENT_i(a, 0)
+#define FUNCTION_2() FUNCTION_1(); ARGUMENT_i(b, 1)
+#define FUNCTION_3() FUNCTION_2(); ARGUMENT_i(c, 2)
+#define FUNCTION_4() FUNCTION_3(); ARGUMENT_i(d, 3)
+#define FUNCTION_5() FUNCTION_4(); ARGUMENT_i(e, 4)
+#define FUNCTION_6() FUNCTION_5(); ARGUMENT_i(f, 5)
+#define FUNCTION_7() FUNCTION_6(); ARGUMENT_i(g, 6)
+#define FUNCTION_8() FUNCTION_7(); ARGUMENT_i(h, 7)
+#define FUNCTION_9() FUNCTION_8(); ARGUMENT_i(i, 8)
 
-int* _g2h(uint32_t x);
-int* _g2h(uint32_t x) { return (int*) g2h(x); }
+#define FUNCTION_f1() ARGUMENT_f(a, 0)
+#define FUNCTION_f2() FUNCTION_f1(); ARGUMENT_f(b, 1)
+#define FUNCTION_f3() FUNCTION_f2(); ARGUMENT_f(c, 2)
+#define FUNCTION_f4() FUNCTION_f3(); ARGUMENT_f(d, 3)
+
+#define HANDLE(f) else if(strcmp(f, name) == 0)
+
+#define FAKE(f) HANDLE(f) { ret = 0; }
 
 EGLDisplay eDisplay;
 EGLConfig eConfig;
 EGLContext eContext;
 EGLSurface eSurface;
+// -----------------------------------------------------------------------------
 
 /* do_syscall() should always have a single exit point at the end so
    that actions, such as logging of syscall results, can be performed.
@@ -7911,14 +7908,18 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
     switch(num) {
     case TARGET_NR_beam_me_up: {
       const char* name = (const char*) g2h(arg1);
-      void* arguments = g2h(arg2);
+      uint32_t* arguments = g2h(arg2);
 
-      // TRACE();
+      // FIXME add X11 patch through (fix locking as well)
+      // FIXME SDL_PollEvent
 
       // SDL
-      if(NAME_IS("SDL_Init")) { ret = 0; }
-      else if(NAME_IS("SDL_SetVideoMode")) { ret = 1; }
-      else if(NAME_IS("SDL_WM_SetCaption")) {
+      // -----------------------------------------------------------------------------
+      if(strcmp("SDL_Init", name) == 0) { ret = 0; }
+
+      HANDLE("SDL_SetVideoMode") { ret = 1; }
+
+      HANDLE("SDL_WM_SetCaption") {
         if(SDL_Init(SDL_INIT_VIDEO) != 0) {
           printf("SDL_Init failed\n");
           return -1;
@@ -7945,382 +7946,445 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
         eglMakeCurrent(eDisplay, eSurface, eSurface, eContext);
         ret = 0;
       }
-      else if(NAME_IS("SDL_WM_GrabInput")) { AI();
+
+      HANDLE("SDL_WM_GrabInput") {
+        FUNCTION_1();
         ret = SDL_WM_GrabInput(a);
       }
-      else if(NAME_IS("SDL_ShowCursor")) { AI();
+
+      HANDLE("SDL_ShowCursor") {
+        FUNCTION_1();
         ret = SDL_ShowCursor(a);
       }
-      else if(NAME_IS("SDL_PollEvent")) {
-        // FIXME this fixes rendering-- yet this needs to be added to
-        // control things!
+
+      HANDLE("SDL_PollEvent") {
+        ret = 0;
+      }
+      // -----------------------------------------------------------------------------
+
+      // GL
+      // -----------------------------------------------------------------------------
+      // void glBufferData(unsigned int target, ssize_t size, const void *data, unsigned int usage)
+      HANDLE("glBufferData") {
+        unsigned int target = arguments[0];
+        unsigned int size = arguments[1];
+        void* data = g2h(arguments[2]);
+        unsigned int usage = arguments[3];
+
+        glBufferData(target, size, data, usage);
         ret = 0;
       }
 
-      // FIXME add X11 patch through (fix locking as well)
+      // void glDeleteBuffers(int n, const unsigned int *buffers)
+      HANDLE("glDeleteBuffers") {
+        int n = arguments[0];
+        unsigned int* buffers = g2h(arguments[1]);
 
-      // OpenGL
-      // int glBindBuffer(GLenum target, GLuint buffer) { TRACE(); }
-      // int glBufferData(GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage) { TRACE(); }
-      // int glDeleteBuffers(GLsizei n, const GLuint* buffers) { TRACE(); }
-      // int glFogx(GLenum pname, GLfixed param) { TRACE(); }
-      else if(NAME_IS("glBindBuffer")) {
-        AII();
+        glDeleteBuffers(n, buffers);
+        ret = 0;
+      }
+
+      // void glColorPointer(int size, unsigned int type, int stride, const void *ptr)
+      HANDLE("glColorPointer") {
+        int size = arguments[0];
+        unsigned int type = arguments[1];
+        int stride = arguments[2];
+        void* ptr = g2h(arguments[3]);
+
+        glColorPointer(size, type, stride, ptr);
+        ret = 0;
+      }
+
+      // void glDeleteTextures(int n, const unsigned int *textures)
+      HANDLE("glDeleteTextures") {
+        int n = arguments[0];
+        unsigned int* textures = g2h(arguments[1]);
+
+        glDeleteTextures(n, textures);
+        ret = 0;
+      }
+
+      // void glGenTextures(int n, unsigned int *textures)
+      HANDLE("glGenTextures") {
+        int n = arguments[0];
+        unsigned int* textures = g2h(arguments[1]);
+
+        glGenTextures(n, textures);
+        ret = 0;
+      }
+
+      // void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr)
+      HANDLE("glTexCoordPointer") {
+        int size = arguments[0];
+        unsigned int type = arguments[1];
+        int stride = arguments[2];
+        void* ptr = g2h(arguments[3]);
+
+        glTexCoordPointer(size, type, stride, ptr);
+        ret = 0;
+      }
+
+      // void glTexImage2D(unsigned int target, int level, int internalFormat, int width, int height, int border, unsigned int format, unsigned int type, const void *pixels)
+      HANDLE("glTexImage2D") {
+        unsigned int target = arguments[0];
+        int level = arguments[1];
+        int internalFormat = arguments[2];
+        int width = arguments[3];
+        int height = arguments[4];
+        int border = arguments[5];
+        unsigned int format = arguments[6];
+        unsigned int type = arguments[7];
+        void* pixels = g2h(arguments[8]);
+
+        glTexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
+        ret = 0;
+      }
+
+      // void glVertexPointer(int size, unsigned int type, int stride, const void *ptr)
+      HANDLE("glVertexPointer") {
+        int size = arguments[0];
+        unsigned int type = arguments[1];
+        int stride = arguments[2];
+        void* ptr = g2h(arguments[3]);
+
+        glVertexPointer(size, type, stride, ptr);
+        ret = 0;
+      }
+
+      // void glMultMatrixf(const float *m)
+      HANDLE("glMultMatrixf") {
+        float* m = g2h(arguments[0]);
+
+        glMultMatrixf(m);
+        ret = 0;
+      }
+
+      // void glGetFloatv(unsigned int pname, float *params)
+      HANDLE("glGetFloatv") {
+        unsigned int pname = arguments[0];
+        float* params = g2h(arguments[1]);
+
+        glGetFloatv(pname, params);
+        ret = 0;
+      }
+
+      // void glFogfv(unsigned int pname, const float *params)
+      HANDLE("glFogfv") {
+        unsigned int pname = arguments[0];
+        float* params = g2h(arguments[1]);
+
+        glFogfv(pname, params);
+        ret = 0;
+      }
+
+      // void glAlphaFunc(unsigned int func, float ref)
+      HANDLE("glAlphaFunc") {
+        unsigned int func = arguments[0];
+        float ref = CAST(float, arguments[1]);
+
+        glAlphaFunc(func, ref);
+        ret = 0;
+      }
+
+      // void glFogf(unsigned int pname, float param)
+      HANDLE("glFogf") {
+        unsigned int pname = arguments[0];
+        float param = CAST(float, arguments[1]);
+
+        glFogf(pname, param);
+        ret = 0;
+      }
+
+      // void glClearColor(float red, float green, float blue, float alpha)
+      HANDLE("glClearColor") {
+        float red = CAST(float, arguments[0]);
+        float green = CAST(float, arguments[1]);
+        float blue = CAST(float, arguments[2]);
+        float alpha = CAST(float, arguments[3]);
+
+        glClearColor(red, green, blue, alpha);
+        ret = 0;
+      }
+
+      // void glColor4f(float red, float green, float blue, float alpha)
+      HANDLE("glColor4f") {
+        float red = CAST(float, arguments[0]);
+        float green = CAST(float, arguments[1]);
+        float blue = CAST(float, arguments[2]);
+        float alpha = CAST(float, arguments[3]);
+
+        glColor4f(red, green, blue, alpha);
+        ret = 0;
+      }
+
+      // void glLineWidth(float width)
+      HANDLE("glLineWidth") {
+        float width = CAST(float, arguments[0]);
+
+        glLineWidth(width);
+        ret = 0;
+      }
+
+      // void glNormal3f(float nx, float ny, float nz)
+      HANDLE("glNormal3f") {
+        float nx = CAST(float, arguments[0]);
+        float ny = CAST(float, arguments[1]);
+        float nz = CAST(float, arguments[2]);
+
+        glNormal3f(nx, ny, nz);
+        ret = 0;
+      }
+
+      // void glPolygonOffset(float factor, float units)
+      HANDLE("glPolygonOffset") {
+        float factor = CAST(float, arguments[0]);
+        float units = CAST(float, arguments[1]);
+
+        glPolygonOffset(factor, units);
+        ret = 0;
+      }
+
+      // void glRotatef(float angle, float x, float y, float z)
+      HANDLE("glRotatef") {
+        float angle = CAST(float, arguments[0]);
+        float x = CAST(float, arguments[1]);
+        float y = CAST(float, arguments[2]);
+        float z = CAST(float, arguments[3]);
+
+        glRotatef(angle, x, y, z);
+        ret = 0;
+      }
+
+      // void glScalef(float x, float y, float z)
+      HANDLE("glScalef") {
+        float x = CAST(float, arguments[0]);
+        float y = CAST(float, arguments[1]);
+        float z = CAST(float, arguments[2]);
+
+        glScalef(x, y, z);
+        ret = 0;
+      }
+
+      // void glTranslatef(float x, float y, float z)
+      HANDLE("glTranslatef") {
+        float x = CAST(float, arguments[0]);
+        float y = CAST(float, arguments[1]);
+        float z = CAST(float, arguments[2]);
+
+        glTranslatef(x, y, z);
+        ret = 0;
+      }
+
+      // void glDepthRangef(float near, float far)
+      HANDLE("glDepthRangef") {
+        float near = CAST(float, arguments[0]);
+        float far = CAST(float, arguments[1]);
+
+        glDepthRangef(near, far);
+        ret = 0;
+      }
+
+      // void glOrthof(float left, float right, float bottom, float top, float near, float far)
+      HANDLE("glOrthof") {
+        float left = CAST(float, arguments[0]);
+        float right = CAST(float, arguments[1]);
+        float bottom = CAST(float, arguments[2]);
+        float top = CAST(float, arguments[3]);
+        float near = CAST(float, arguments[4]);
+        float far = CAST(float, arguments[5]);
+
+        glOrthof(left, right, bottom, top, near, far);
+        ret = 0;
+      }
+
+      // void glBindBuffer(unsigned int target, unsigned int buffer)
+      HANDLE("glBindBuffer") {
+        FUNCTION_2();
         glBindBuffer(a, b);
         ret = 0;
       }
-      else if(NAME_IS("glBufferData")) {
-        AIIII();
-        glBufferData(a, b, g2h(c), d);
-        ret = 0;
-      }
-      else if(NAME_IS("glDeleteBuffers")) {
-        AII();
-        glDeleteBuffers(a, g2h(b));
-        ret = 0;
-      }
-      else if(NAME_IS("glFogx")) {
-        AII();
-        glFogx(a,b);
+
+      // void glFogx(unsigned int pname, int param);
+      HANDLE("glFogx") {
+        FUNCTION_2();
+        glFogx(a, b);
         ret = 0;
       }
 
-      // int glDepthRangef(void) { TRACE(); }
-      else if(NAME_IS("glDepthRangef")) {
-        AII();
-        glDepthRangef(a, b);
-        ret = 0;
-      }
-      // int glOrthof(void) { TRACE(); }
-      else if(NAME_IS("glOrthof")) {
-        FUNCTION_F(a, 0);
-        FUNCTION_F(b, 1);
-        FUNCTION_F(c, 2);
-        FUNCTION_F(d, 3);
-        FUNCTION_F(e, 4);
-        FUNCTION_F(f, 5);
-
-        glOrthof(a,b,c,d,e,f);
-        ret = 0;
-      }
-      // void glAlphaFunc(GLenum func, GLclampf ref) { TRACE(); }
-      else if(NAME_IS("glAlphaFunc")) {
-        AII();
-        glAlphaFunc(a, b);
-        ret = 0;
-      }
-
-      // void glBindTexture(GLenum target, GLuint texture) { TRACE(); }
-      else if(NAME_IS("glBindTexture")) {
-        AII();
+      // void glBindTexture(unsigned int target, unsigned int texture)
+      HANDLE("glBindTexture") {
+        FUNCTION_2();
         glBindTexture(a, b);
         ret = 0;
       }
 
-      // void glBlendFunc(GLenum sfactor, GLenum dfactor) { TRACE(); }
-      else if(NAME_IS("glBlendFunc")) {
-        AII();
+      // void glBlendFunc(unsigned int sfactor, unsigned int dfactor)
+      HANDLE("glBlendFunc") {
+        FUNCTION_2();
         glBlendFunc(a, b);
         ret = 0;
       }
-      // void glClear(GLbitfield mask) { TRACE(); }
-      else if(NAME_IS("glClear")) { AI();
+
+      // void glClear(unsigned int mask)
+      HANDLE("glClear") {
+        FUNCTION_1();
         glClear(a);
-        glClearColor(1.0, 0.0, 0.0, 1.0);
         ret = 0;
       }
-      // // void glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) { TRACE(); }
-      else if(NAME_IS("glClearColor")) {
-        FUNCTION_F(a, 0);
-        FUNCTION_F(b, 1);
-        FUNCTION_F(c, 2);
-        FUNCTION_F(d, 3);
 
-        glClearColor(a, b, c, d);
+      // void glColorMask(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
+      HANDLE("glColorMask") {
+        FUNCTION_4();
+        glColorMask((unsigned char) a, (unsigned char) b, (unsigned char) c, (unsigned char) d);
         ret = 0;
       }
-      // void glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) { TRACE(); }
-      else if(NAME_IS("glColor4f")) {
-        FUNCTION_F(a, 0);
-        FUNCTION_F(b, 1);
-        FUNCTION_F(c, 2);
-        FUNCTION_F(d, 3);
 
-        glColor4f(a,b,c,d);
-        ret = 0;
-      }
-      // void glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) { TRACE(); }
-      else if(NAME_IS("glColorMask")) {
-        AIIII();
-        glColorMask(a,b,c,d);
-        ret = 0;
-      }
-      // void glColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
-      else if(NAME_IS("glColorPointer")) {
-        AIIII();
-        glColorPointer(a,b,c,g2h(d));
-        ret = 0;
-      }
-      // void glCullFace(GLenum mode) { TRACE(); }
-      else if(NAME_IS("glCullFace")) {
-        AI();
+      // void glCullFace(unsigned int mode)
+      HANDLE("glCullFace") {
+        FUNCTION_1();
         glCullFace(a);
         ret = 0;
       }
-      // void glDeleteTextures(GLsizei n, const GLuint *textures) { TRACE(); }
-      else if(NAME_IS("glDeleteTextures")) {
-        AII();
-        glDeleteTextures(a, g2h(b));
-        ret = 0;
-      }
-      // void glDepthFunc(GLenum func) { TRACE(); }
-      else if(NAME_IS("glDepthFunc")) {
-        AI();
+
+      // void glDepthFunc(unsigned int func)
+      HANDLE("glDepthFunc") {
+        FUNCTION_1();
         glDepthFunc(a);
         ret = 0;
       }
-      // void glDepthMask(GLboolean flag) { TRACE(); }
-      else if(NAME_IS("glDepthMask")) {
-        AI();
-        glDepthMask(a);
+
+      // void glDepthMask(unsigned char flag)
+      HANDLE("glDepthMask") {
+        FUNCTION_1();
+        glDepthMask((unsigned char) a);
         ret = 0;
       }
-      // void glDisable(GLenum cap) { TRACE(); }
-      else if(NAME_IS("glDisable")) {
-        AI();
+
+      // void glDisable(unsigned int cap)
+      HANDLE("glDisable") {
+        FUNCTION_1();
         glDisable(a);
         ret = 0;
       }
-      // void glDisableClientState(GLenum cap) { TRACE(); }
-      else if(NAME_IS("glDisableClientState")) {
-        AI();
+
+      // void glDisableClientState(unsigned int cap)
+      HANDLE("glDisableClientState") {
+        FUNCTION_1();
         glDisableClientState(a);
         ret = 0;
       }
-      // void glDrawArrays(GLenum mode, GLint first, GLsizei count) { TRACE(); }
-      else if(NAME_IS("glDrawArrays")) {
-        AIII();
-        glDrawArrays(a,b,c);
+
+      // void glDrawArrays(unsigned int mode, int first, int count)
+      HANDLE("glDrawArrays") {
+        FUNCTION_3();
+        glDrawArrays(a, b, c);
         ret = 0;
       }
-      // void glEnable(GLenum cap) { TRACE(); }
-      else if(NAME_IS("glEnable")) {
-        AI();
+
+      // void glEnable(unsigned int cap)
+      HANDLE("glEnable") {
+        FUNCTION_1();
         glEnable(a);
         ret = 0;
       }
-      // void glEnableClientState(GLenum cap) { TRACE(); }
-      else if(NAME_IS("glEnableClientState")) {
-        AI();
+
+      // void glEnableClientState(unsigned int cap)
+      HANDLE("glEnableClientState") {
+        FUNCTION_1();
         glEnableClientState(a);
         ret = 0;
       }
-      // void glFogf(GLenum pname, GLfloat param) { TRACE(); }
-      else if(NAME_IS("glFogf")) {
-        FUNCTION_I(a, 0);
-        FUNCTION_F(b, 1);
 
-        glFogf(a, b);
+      // void glHint(unsigned int target, unsigned int mode)
+      HANDLE("glHint") {
+        FUNCTION_2();
+        glHint(a, b);
         ret = 0;
       }
-      // void glFogfv(GLenum pname, const GLfloat *params) { TRACE(); }
-      else if(NAME_IS("glFogfv")) {
-        FUNCTION_I(a, 0);
-        FUNCTION_I(b, 1);
 
-        glFogfv(a, g2h(b));
-        ret = 0;
-      }
-      // void glGenTextures(GLsizei n, GLuint *textures) { TRACE(); }
-      else if(NAME_IS("glGenTextures")) {
-        FUNCTION_I(a, 0);
-        FUNCTION_I(b, 1);
-        // int* b = ((int*) (arguments + 4));
-
-        glGenTextures(a, g2h(b));
-        ret = 0;
-      }
-      // void glGetFloatv(GLenum pname, GLfloat *params) { TRACE(); }
-      else if(NAME_IS("glGetFloatv")) {
-        AII();
-
-        glGetFloatv(a, g2h(b));
-        ret = 0;
-      }
-      // void glHint(GLenum target, GLenum mode) { TRACE(); }
-      else if(NAME_IS("glHint")) {
-        AII();
-        glHint(a,b);
-        ret = 0;
-      }
-      // void glLineWidth(GLfloat width) { TRACE(); }
-      else if(NAME_IS("glLineWidth")) {
-        FUNCTION_F(a, 0);
-
-        glLineWidth(a);
-        ret = 0;
-      }
-      // void glLoadIdentity(void) { TRACE(); }
-      else if(NAME_IS("glLoadIdentity")) {
+      // void glLoadIdentity(void)
+      HANDLE("glLoadIdentity") {
         glLoadIdentity();
         ret = 0;
       }
-      // void glMatrixMode(GLenum mode) { TRACE(); }
-      else if(NAME_IS("glMatrixMode")) {
-        AI();
+
+      // void glMatrixMode(unsigned int mode)
+      HANDLE("glMatrixMode") {
+        FUNCTION_1();
         glMatrixMode(a);
         ret = 0;
       }
-      // void glMultMatrixf(const GLfloat *m) { TRACE(); }
-      else if(NAME_IS("glMultMatrixf")) {
-        AI();
-        glMultMatrixf(g2h(a));
-        ret = 0;
-      }
-      // void glNormal3f(GLfloat nx, GLfloat ny, GLfloat nz) { TRACE(); }
-      else if(NAME_IS("glNormal3f")) {
-        FUNCTION_F(a, 0);
-        FUNCTION_F(b, 1);
-        FUNCTION_F(c, 2);
 
-        glNormal3f(a, b, c);
-        ret = 0;
-      }
-      // void glPolygonOffset(GLfloat factor, GLfloat units) { TRACE(); }
-      else if(NAME_IS("glPolygonOffset")) {
-        FUNCTION_F(a, 0);
-        FUNCTION_F(b, 1);
-        glPolygonOffset(a, b);
-        ret = 0;
-      }
-
-      // void glPopMatrix(void) { TRACE(); }
-      else if(NAME_IS("glPopMatrix")) {
+      // void glPopMatrix(void)
+      HANDLE("glPopMatrix") {
         glPopMatrix();
         ret = 0;
       }
-      // void glPushMatrix(void) { TRACE(); }
-      else if(NAME_IS("glPushMatrix")) {
+
+      // void glPushMatrix(void)
+      HANDLE("glPushMatrix") {
         glPushMatrix();
         ret = 0;
       }
-      // void glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
-      else if(NAME_IS("glRotatef")) {
-        FUNCTION_F(a, 0);
-        FUNCTION_F(b, 1);
-        FUNCTION_F(c, 2);
-        FUNCTION_F(d, 3);
 
-        glRotatef(a,b,c,d);
+      // void glScissor(int x, int y, int width, int height)
+      HANDLE("glScissor") {
+        FUNCTION_4();
+        glScissor(a, b, c, d);
         ret = 0;
       }
-      // void glScalef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
-      else if(NAME_IS("glScalef")) {
-        FUNCTION_F(a, 0);
-        FUNCTION_F(b, 1);
-        FUNCTION_F(c, 2);
 
-        glScalef(a,b,c);
-        ret = 0;
-      }
-      // void glScissor(GLint x, GLint y, GLsizei width, GLsizei height) { TRACE(); }
-      else if(NAME_IS("glScissor")) {
-        AIIII();
-        glScissor(a,b,c,d);
-        ret = 0;
-      }
-      // void glShadeModel(GLenum mode) { TRACE(); }
-      else if(NAME_IS("glShadeModel")) {
-        AI();
+      // void glShadeModel(unsigned int mode)
+      HANDLE("glShadeModel") {
+        FUNCTION_1();
         glShadeModel(a);
         ret = 0;
       }
-      // void glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
-      else if(NAME_IS("glTexCoordPointer")) {
-        AIIII();
-        glTexCoordPointer(a,b,c,g2h(d));
-        ret = 0;
-      }
-      // void glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels) { TRACE(); }
-      else if(NAME_IS("glTexImage2D")) {
-        AIIIIIIIII();
-        glTexImage2D(a,b,c,d,e,f,g,h,g2h(i));
-        ret = 0;
-      }
-      // void glTexParameteri(GLenum target, GLenum pname, GLint param) { TRACE(); }
-      else if(NAME_IS("glTexParameteri")) {
-        AIII();
-        glTexParameteri(a,b,c);
-        ret = 0;
-      }
-      // void glTranslatef(GLfloat x, GLfloat y, GLfloat z) { TRACE(); }
-      else if(NAME_IS("glTranslatef")) {
-        FUNCTION_F(a, 0);
-        FUNCTION_F(b, 1);
-        FUNCTION_F(c, 2);
 
-        glTranslatef(a,b,c);
+      // void glTexParameteri(unsigned int target, unsigned int pname, int param)
+      HANDLE("glTexParameteri") {
+        FUNCTION_3();
+        glTexParameteri(a, b, c);
         ret = 0;
       }
-      // void glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) { TRACE(); }
-      else if(NAME_IS("glVertexPointer")) {
-        AIIII();
-        glVertexPointer(a,b,c,g2h(d));
+
+      // void glViewport(int x, int y, int width, int height)
+      HANDLE("glViewport") {
+        FUNCTION_4();
+        glViewport(a, b, c, d);
         ret = 0;
       }
-      // void glViewport(GLint x, GLint y, GLsizei width, GLsizei height) { TRACE(); }
-      else if(NAME_IS("glViewport")) {
-        AIIII();
-        glViewport(a,b,c,d);
-        ret = 0;
-      }
+
+      // -----------------------------------------------------------------------------
 
       // EGL
-      else if(NAME_IS("eglGetDisplay")) {
-        ret = 0;
-      }
+      // -----------------------------------------------------------------------------
+      FAKE("eglGetDisplay")
+      FAKE("eglInitialize")
+      FAKE("eglChooseConfig")
+      FAKE("eglBindAPI")
+      FAKE("eglCreateContext")
+      FAKE("eglCreateWindowSurface")
+      FAKE("eglMakeCurrent")
 
-      else if(NAME_IS("eglInitialize")) {
-        ret = 0;
-      }
-
-      else if(NAME_IS("eglChooseConfig")) {
-        ret = 0;
-      }
-
-      else if(NAME_IS("eglBindAPI")) {
-        ret = 0;
-      }
-
-      else if(NAME_IS("eglCreateContext")) {
-        ret = 0;
-      }
-
-      else if(NAME_IS("eglCreateWindowSurface")) {
-        ret = 0;
-      }
-
-      else if(NAME_IS("eglMakeCurrent")) {
-        ret = 0;
-      }
-
-      else if(NAME_IS("eglSwapBuffers")) {
+      HANDLE("eglSwapBuffers") {
         printf("EGL swap buffer\n");
         eglSwapBuffers(eDisplay, eSurface);
         ret = 0;
       }
 
-      else if(NAME_IS("eglDestroySurface")) {
+      HANDLE("eglDestroySurface") {
         printf("EGL destroy surface\n");
         // eglDestroySurface(eDisplay, eSurface);
         ret = 0;
       }
 
-      else if(NAME_IS("eglTerminate")) {
+      HANDLE("eglTerminate") {
         printf("EGL terminate\n");
         // eglTerminate(eDisplay);
         ret = 0;
       }
+      // -----------------------------------------------------------------------------
 
       else {
         ret = -1;
