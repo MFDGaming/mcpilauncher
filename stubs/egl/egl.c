@@ -68,19 +68,19 @@ void glVertexPointer(int a, unsigned int b, int c, const void* d) {
 
 // void glMultMatrixf(const float *m)
 void glMultMatrixf(const float* a) {
-  uint32_t s[1] = { (int*) a };
+  uint32_t s[1] = { (uint32_t*) a };
   SYSCALL(&s);
 }
 
 // void glGetFloatv(unsigned int pname, float *params)
 void glGetFloatv(unsigned int a, float* b) {
-  uint32_t s[2] = { a, (int*) b };
+  uint32_t s[2] = { a, (uint32_t*) b };
   SYSCALL(&s);
 }
 
 // void glFogfv(unsigned int pname, const float *params)
 void glFogfv(unsigned int a, const float* b) {
-  uint32_t s[2] = { a, (int*) b };
+  uint32_t s[2] = { a, (uint32_t*) b };
   SYSCALL(&s);
 }
 // -----------------------------------------------------------------------------

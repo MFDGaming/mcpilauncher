@@ -7839,7 +7839,7 @@ static int host_to_target_cpu_mask(const unsigned long *host_mask,
 #include <dlfcn.h>
 
 #define TRACE() (printf("`%s()` called!\n", name))
-#define CAST(type, name) *((type*)&name);
+#define CAST(type, name) (*((type*)&name))
 
 #define ARGUMENT_i(a, b) int a = arguments[b]
 #define ARGUMENT_f(a, b) float a = CAST(float, arguments[b])
@@ -7867,6 +7867,14 @@ EGLDisplay eDisplay;
 EGLConfig eConfig;
 EGLContext eContext;
 EGLSurface eSurface;
+
+void (*_x_lock_function)(void);
+void (*_x_unlock_function)(void);
+
+Display* xDisplay;
+Window xWindow;
+Window xRootWindow;
+
 // -----------------------------------------------------------------------------
 
 /* do_syscall() should always have a single exit point at the end so
@@ -7931,7 +7939,15 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
         SDL_SysWMinfo info;
         SDL_VERSION(&info.version);
         SDL_GetWMInfo(&info);
-        eDisplay = eglGetDisplay((EGLNativeDisplayType) info.info.x11.display);
+
+        _x_lock_function = info.info.x11.lock_func;
+        _x_unlock_function = info.info.x11.unlock_func;
+
+        xDisplay = info.info.x11.display;
+        xWindow = info.info.x11.window;
+        xRootWindow = RootWindow(xDisplay, DefaultScreen(xDisplay));
+
+        eDisplay = eglGetDisplay((EGLNativeDisplayType) xDisplay);
 
         eglInitialize(eDisplay, NULL, NULL);
 
@@ -7941,7 +7957,7 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
         eglBindAPI(EGL_OPENGL_ES_API);
 
         eContext = eglCreateContext(eDisplay, eConfig, EGL_NO_CONTEXT, NULL);
-        eSurface = eglCreateWindowSurface(eDisplay, eConfig, (NativeWindowType) info.info.x11.window, NULL);
+        eSurface = eglCreateWindowSurface(eDisplay, eConfig, (NativeWindowType) xWindow, NULL);
 
         eglMakeCurrent(eDisplay, eSurface, eSurface, eContext);
         ret = 0;
@@ -7958,7 +7974,151 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       }
 
       HANDLE("SDL_PollEvent") {
+        typedef struct {
+          uint8_t scancode;
+          uint16_t sym;
+          uint16_t mod;
+          uint16_t unicode;
+        } sKeysym;
+
+        typedef struct {
+          uint8_t type;
+          uint8_t which;
+          uint8_t state;
+          sKeysym keysym;
+        } sKeyboardEvent;
+
+        typedef struct {
+          uint8_t type;
+        } sQuitEvent;
+
+        typedef struct {
+          uint8_t type;
+          uint8_t gain;
+          uint8_t state;
+        } sActiveEvent;
+
+        typedef struct {
+          uint8_t type;
+          uint8_t which;
+          uint8_t state;
+          uint16_t x, y;
+          int16_t xrel;
+          int16_t yrel;
+        } sMouseMotionEvent;
+
+        typedef struct {
+          uint8_t type;
+          uint8_t which;
+          uint8_t button;
+          uint8_t state;
+          int16_t x, y;
+        } sMouseButtonEvent;
+
+        typedef union {
+          uint8_t type;
+          sQuitEvent quit;
+          sActiveEvent active;
+          sKeyboardEvent key;
+          sMouseMotionEvent motion;
+          sMouseButtonEvent button;
+        } sHostEvent;
+
+        sHostEvent* a = CAST(sHostEvent*, arguments[0]);
+        SDL_Event event;
+        ret = SDL_PollEvent(&event);
+
+        switch(event.type) {
+          case SDL_QUIT:
+            a->quit.type = SDL_QUIT;
+            eglDestroyContext(eDisplay, eContext);
+            eglDestroySurface(eDisplay, eSurface);
+            eglTerminate(eDisplay);
+            SDL_Quit();
+            exit(0); // XXX
+            break;
+          case SDL_ACTIVEEVENT:
+            a->active.type = SDL_ACTIVEEVENT;
+            a->active.gain = event.active.gain;
+            a->active.state = event.active.state;
+            break;
+          case SDL_KEYDOWN:
+          case SDL_KEYUP:
+            a->key.type = event.type;
+            a->key.which = event.key.which;
+            a->key.state = event.key.state;
+            a->key.keysym.scancode = event.key.keysym.scancode;
+            a->key.keysym.sym = event.key.keysym.sym;
+            a->key.keysym.mod = event.key.keysym.mod;
+            a->key.keysym.unicode = event.key.keysym.unicode;
+            break;
+          case SDL_MOUSEMOTION:
+            a->motion.type = event.type;
+            a->motion.which = event.motion.which;
+            a->motion.state = event.motion.state;
+            a->motion.x = event.motion.x;
+            a->motion.y = event.motion.y;
+            a->motion.xrel = event.motion.xrel;
+            a->motion.yrel = event.motion.yrel;
+            break;
+          case SDL_MOUSEBUTTONDOWN:
+          case SDL_MOUSEBUTTONUP:
+            a->button.type = event.type;
+            a->button.which = event.button.which;
+            a->button.button = event.button.button;
+            a->button.state = event.button.state;
+            a->button.x = event.button.x;
+            a->button.y = event.button.y;
+            break;
+          default:
+            break;
+        }
+      }
+      // -----------------------------------------------------------------------------
+
+      // X11
+      // -----------------------------------------------------------------------------
+      HANDLE("x_lock_function") {
+        _x_lock_function();
         ret = 0;
+      }
+
+      HANDLE("x_unlock_function") {
+        _x_unlock_function();
+        ret = 0;
+      }
+
+      // int XTranslateCoordinates(Display *display, Window src_w, Window dest_w, int src_x, int src_y, int *dest_x_return, int *dest_y_return, Window *child_return) {
+      HANDLE("XTranslateCoordinates") {
+        int src_x = arguments[0];
+        int src_y = arguments[1];
+        int* dest_x_return = g2h(arguments[2]);
+        int* dest_y_return = g2h(arguments[3]);
+
+        Window fake;
+
+        ret = XTranslateCoordinates(xDisplay, xWindow, xRootWindow, src_x, src_y, dest_x_return, dest_y_return, &fake);
+      }
+
+      // int XGetWindowAttributes(Display *display, Window w, XWindowAttributes *window_attributes_return) {
+      HANDLE("XGetWindowAttributes") {
+        typedef struct {
+          uint32_t x, y;
+          uint32_t width, height;
+          uint8_t unused[76];
+        } sWindowAttributes;
+
+        sWindowAttributes* window_attributes_return = g2h(arguments[0]);
+        memset(window_attributes_return, 0, sizeof(sWindowAttributes));
+
+        XWindowAttributes xWindowAttributes;
+        ret = XGetWindowAttributes(xDisplay, xWindow, &xWindowAttributes);
+
+        window_attributes_return->width = xWindowAttributes.width;
+        window_attributes_return->height = xWindowAttributes.height;
+
+        window_attributes_return->x = xWindowAttributes.x;
+        window_attributes_return->y = xWindowAttributes.y;
       }
       // -----------------------------------------------------------------------------
 
@@ -8368,21 +8528,12 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       FAKE("eglMakeCurrent")
 
       HANDLE("eglSwapBuffers") {
-        printf("EGL swap buffer\n");
         ret = eglSwapBuffers(eDisplay, eSurface);
       }
 
-      HANDLE("eglDestroySurface") {
-        printf("EGL destroy surface\n");
-        // eglDestroySurface(eDisplay, eSurface);
-        ret = 0;
-      }
-
-      HANDLE("eglTerminate") {
-        printf("EGL terminate\n");
-        // eglTerminate(eDisplay);
-        ret = 0;
-      }
+      // XXX these are handled in the SDL_PollEvent implementation
+      FAKE("eglDestroySurface")
+      FAKE("eglTerminate")
       // -----------------------------------------------------------------------------
 
       else {

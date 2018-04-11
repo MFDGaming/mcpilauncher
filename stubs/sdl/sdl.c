@@ -44,9 +44,13 @@ FUNCTION_2(SDL_WM_SetCaption)
 FUNCTION_1(SDL_WM_GrabInput)
 FUNCTION_1(SDL_ShowCursor)
 
-// XXX
-static void x_lock_function(void) { }
-static void x_unlock_function(void) { }
+static void x_lock_function(void) {
+  SYSCALL(NULL);
+}
+
+static void x_unlock_function(void) {
+  SYSCALL(NULL);
+}
 
 int SDL_GetWMInfo(void* a) {
   memset(a, 0, sizeof(SDL_SysWMinfo));
