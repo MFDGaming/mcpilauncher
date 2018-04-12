@@ -7964,8 +7964,11 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
       }
 
       HANDLE("SDL_WM_GrabInput") {
-        FUNCTION_1();
-        ret = SDL_WM_GrabInput(a);
+        // FIXME removed because it locks you in and doesn't let you leave
+        // the window!
+        // FUNCTION_1();
+        // ret = SDL_WM_GrabInput(a);
+        ret = 1;
       }
 
       HANDLE("SDL_ShowCursor") {
@@ -8024,7 +8027,7 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
           sMouseButtonEvent button;
         } sHostEvent;
 
-        sHostEvent* a = CAST(sHostEvent*, arguments[0]);
+        sHostEvent* a = g2h(arguments[0]);
         SDL_Event event;
         ret = SDL_PollEvent(&event);
 
@@ -8070,7 +8073,8 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
             a->button.x = event.button.x;
             a->button.y = event.button.y;
             break;
-          default:
+          default: // FIXME
+            ret = 0;
             break;
         }
       }

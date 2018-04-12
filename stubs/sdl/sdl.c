@@ -37,7 +37,6 @@ typedef struct {
 } SDL_SysWMinfo;
 
 FUNCTION_0(SDL_Quit)
-FUNCTION_1(SDL_PollEvent)
 FUNCTION_4(SDL_SetVideoMode)
 FUNCTION_1(SDL_Init)
 FUNCTION_2(SDL_WM_SetCaption)
@@ -50,6 +49,11 @@ static void x_lock_function(void) {
 
 static void x_unlock_function(void) {
   SYSCALL(NULL);
+}
+
+int SDL_PollEvent(void* a) {
+  uint32_t s[1] = { (uint32_t) a };
+  SYSCALL(&s);
 }
 
 int SDL_GetWMInfo(void* a) {
