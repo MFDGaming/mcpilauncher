@@ -1,6 +1,6 @@
 DIR = `pwd`
 NATIVES = ../../natives/lib
-TARGETS := bcm_host egl sdl x11
+TARGETS := bcm_host egl sdl x11 gl
 
 .PHONY: all clean move
 
