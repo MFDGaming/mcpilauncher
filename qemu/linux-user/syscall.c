@@ -8040,7 +8040,22 @@ abi_long do_syscall(void *cpu_env, int num, abi_long arg1,
             SDL_Quit();
             exit(0); // XXX
             break;
-          case SDL_ACTIVEEVENT:
+	  case SDL_VIDEORESIZE:
+	    // SDL reset the video state
+	    SDL_SetVideoMode(event.resize.w, event.resize.h, 32, 16);
+
+	    // OpenGL state modification for resizing
+	    glViewport(0, 0, event.resize.w, event.resize.h);
+	    glMatrixMode(GL_PROJECTION);
+           glOrthox(0, event.resize.w, 0, event.resize.h, -1, 1);
+           glLoadIdentity();
+           glMatrixMode(GL_MODELVIEW);
+           glLoadIdentity();
+           glClear(GL_COLOR_BUFFER_BIT);
+           glLoadIdentity();
+
+	    break;
+	  case SDL_ACTIVEEVENT:
             a->active.type = SDL_ACTIVEEVENT;
             a->active.gain = event.active.gain;
             a->active.state = event.active.state;
