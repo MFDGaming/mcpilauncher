@@ -21,3 +21,4 @@ VERSION.txt
 options.txt
 *.core
 api/
+build/
